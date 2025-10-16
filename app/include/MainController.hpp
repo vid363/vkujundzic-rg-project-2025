@@ -17,6 +17,10 @@ namespace app {
 
         void end_draw() override;
 
+        void update() override;
+
+        void update_camera();
+
         public:
             std::string_view name() const override {
                 return "app::MainController";
