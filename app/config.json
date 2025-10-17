@@ -3,6 +3,9 @@
     "models": {
       "ak47": {
         "path": "ak47/AK47.obj"
+      },
+      "heli": {
+        "path": "heli/ah64d.obj"
       }
     }
   },

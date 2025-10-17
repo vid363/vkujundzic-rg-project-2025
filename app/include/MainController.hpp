@@ -15,6 +15,8 @@ namespace app {
 
         void draw_ak47();
 
+        void draw_heli();
+
         void end_draw() override;
 
         void update() override;

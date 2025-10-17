@@ -9,7 +9,7 @@
 
 namespace app {
 
-    // TODO: Maybe move to separate cpp file
+    // TODO: Maybe move to seperate
     class MainPlatformEventObserver : public engine::platform::PlatformEventObserver {
         public:
             void on_mouse_move(engine::platform::MousePosition position) override;
@@ -41,7 +41,7 @@ namespace app {
         engine::graphics::OpenGL::clear_buffers();
     }
 
-    void MainController::draw() { draw_ak47(); }
+    void MainController::draw() { draw_ak47(); draw_heli();}
 
     void MainController::draw_ak47() {
         auto resources = get<engine::resources::ResourcesController>();
@@ -56,12 +56,31 @@ namespace app {
         shader->set_mat4("view", graphics->camera()->view_matrix());
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, -15.0f));
-        //model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
         model = glm::scale(model, glm::vec3(0.2f));
         shader->set_mat4("model", model);
 
         ak47->draw(shader);
+    }
+
+    void MainController::draw_heli() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model* heli = resources->model("heli");
+        engine::resources::Shader *shader = resources->shader("basic");
+
+        shader->use();
+
+        shader->set_mat4("projection", graphics->projection_matrix());
+        shader->set_mat4("view", graphics->camera()->view_matrix());
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 6.0f, -5.0f));
+        model = glm::scale(model, glm::vec3(0.5f));
+        shader->set_mat4("model", model);
+
+        heli->draw(shader);
     }
 
     void MainController::end_draw() {
