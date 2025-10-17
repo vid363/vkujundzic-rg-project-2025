@@ -22,6 +22,8 @@ namespace app {
 
         void draw_heli();
 
+        void draw_bmp();
+
         void draw_skybox();
 
         void end_draw() override;

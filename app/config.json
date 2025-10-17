@@ -6,6 +6,9 @@
       },
       "heli": {
         "path": "heli/ah64d.obj"
+      },
+      "bmp": {
+        "path": "bmp/BMP.obj"
       }
     }
   },
