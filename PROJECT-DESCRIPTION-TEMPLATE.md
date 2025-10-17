@@ -13,6 +13,12 @@ S -> Camera backwards
 
 D -> Camera right
 
+Space -> Camera ascend
+
+Left Shift -> Camera descend
+
+K -> Toggle GUI
+
 ## Features
 
 ### Fundamental:
