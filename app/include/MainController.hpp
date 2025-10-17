@@ -4,7 +4,7 @@
 #include <engine/core/Controller.hpp>
 
 namespace app {
-    class MainController : public engine::core::Controller {
+    class MainController final : public engine::core::Controller {
     public:
         float get_speed() const { return speed; }
     private:
