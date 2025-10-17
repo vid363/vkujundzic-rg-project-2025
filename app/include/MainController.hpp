@@ -5,6 +5,11 @@
 
 namespace app {
     class MainController : public engine::core::Controller {
+    public:
+        float get_speed() const { return speed; }
+    private:
+        float speed = 3.0f;
+
         void initialize() override;
 
         bool loop() override;
@@ -16,6 +21,8 @@ namespace app {
         void draw_ak47();
 
         void draw_heli();
+
+        void draw_skybox();
 
         void end_draw() override;
 

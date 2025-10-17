@@ -17,7 +17,10 @@ namespace app {
 
     void MainPlatformEventObserver::on_mouse_move(engine::platform::MousePosition position) {
         auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
-        camera->rotate_camera(position.dx, position.dy);
+
+        // Temporary solution
+        auto sensitivity = 5.0f;
+        camera->rotate_camera(position.dx * sensitivity, position.dy * sensitivity);
     }
 
 
@@ -41,7 +44,7 @@ namespace app {
         engine::graphics::OpenGL::clear_buffers();
     }
 
-    void MainController::draw() { draw_ak47(); draw_heli();}
+    void MainController::draw() { draw_ak47(); draw_heli(); draw_skybox();}
 
     void MainController::draw_ak47() {
         auto resources = get<engine::resources::ResourcesController>();
@@ -83,6 +86,15 @@ namespace app {
         heli->draw(shader);
     }
 
+    void MainController::draw_skybox() {
+        auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
+        auto skybox = resources->skybox("night_skybox");
+        auto shader = resources->shader("skybox");
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        graphics->draw_skybox(shader, skybox);
+    }
+
     void MainController::end_draw() {
         auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
         platform->swap_buffers();
@@ -96,14 +108,19 @@ namespace app {
         auto camera = graphics->camera();
 
         float dt = platform->dt();
+        float movement_speed = dt * this->get_speed();
 
-        if (platform->key(engine::platform::KEY_W).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::FORWARD, dt); }
+        if (platform->key(engine::platform::KEY_W).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::FORWARD, movement_speed); }
 
-        if (platform->key(engine::platform::KEY_S).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::BACKWARD, dt); }
+        if (platform->key(engine::platform::KEY_S).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::BACKWARD, movement_speed); }
 
-        if (platform->key(engine::platform::KEY_A).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::LEFT, dt); }
+        if (platform->key(engine::platform::KEY_A).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::LEFT, movement_speed); }
 
-        if (platform->key(engine::platform::KEY_D).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::RIGHT, dt); }
+        if (platform->key(engine::platform::KEY_D).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::RIGHT, movement_speed); }
+
+        if (platform->key(engine::platform::KEY_SPACE).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::UP, movement_speed); }
+
+        if (platform->key(engine::platform::KEY_LEFT_SHIFT).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::DOWN, movement_speed); }
     }
 
 }
