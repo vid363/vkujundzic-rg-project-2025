@@ -22,7 +22,7 @@ namespace app {
 
         void draw_heli();
 
-        void draw_bmp();
+        void draw_barn();
 
         void draw_skybox();
 

@@ -14,6 +14,7 @@ namespace app {
     class MainPlatformEventObserver : public engine::platform::PlatformEventObserver {
         public:
             void on_mouse_move(engine::platform::MousePosition position) override;
+            void on_scroll(engine::platform::MousePosition position) override;
     };
 
     void MainPlatformEventObserver::on_mouse_move(engine::platform::MousePosition position) {
@@ -26,6 +27,16 @@ namespace app {
         camera->rotate_camera(position.dx * sensitivity, position.dy * sensitivity);
     }
 
+    void MainPlatformEventObserver::on_scroll(engine::platform::MousePosition position) {
+        auto gui = engine::core::Controller::get<GUIController>();
+        if (gui->is_enabled()) return;
+
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+        auto camera = graphics->camera();
+        camera->zoom(position.dy);
+        graphics->perspective_params().FOV = glm::radians(camera->Zoom);
+
+    }
 
     void MainController::initialize() {
         spdlog::info("Initializing MainController...");
@@ -47,7 +58,7 @@ namespace app {
         engine::graphics::OpenGL::clear_buffers();
     }
 
-    void MainController::draw() { draw_ak47(); draw_heli(); draw_bmp(); draw_skybox();}
+    void MainController::draw() { draw_ak47(); draw_heli(); draw_barn(); draw_skybox();}
 
     void MainController::draw_ak47() {
         auto resources = get<engine::resources::ResourcesController>();
@@ -89,11 +100,11 @@ namespace app {
         heli->draw(shader);
     }
 
-    void MainController::draw_bmp() {
+    void MainController::draw_barn() {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Model* bmp = resources->model("bmp");
+        engine::resources::Model* barn = resources->model("barn");
         engine::resources::Shader *shader = resources->shader("basic");
 
         shader->use();
@@ -106,7 +117,7 @@ namespace app {
         model = glm::scale(model, glm::vec3(1.0f));
         shader->set_mat4("model", model);
 
-        bmp->draw(shader);
+        barn->draw(shader);
     }
 
     void MainController::draw_skybox() {
@@ -147,6 +158,10 @@ namespace app {
         if (platform->key(engine::platform::KEY_SPACE).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::UP, movement_speed); }
 
         if (platform->key(engine::platform::KEY_LEFT_SHIFT).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::DOWN, movement_speed); }
+
+        auto mouse = platform->mouse();
+        camera->rotate_camera(mouse.dx, mouse.dy);
+        camera->zoom(mouse.scroll);
     }
 
 }

@@ -2,13 +2,16 @@
   "resources": {
     "models": {
       "ak47": {
-        "path": "ak47/AK47.obj"
+        "path": "ak47/AK47.obj",
+        "flip_uvs": true
       },
       "heli": {
-        "path": "heli/ah64d.obj"
+        "path": "heli/ah64d.obj",
+        "flip_uvs": true
       },
-      "bmp": {
-        "path": "bmp/BMP.obj"
+      "barn": {
+        "path": "barn4/scene.gltf",
+        "flip_uvs": true
       }
     }
   },
