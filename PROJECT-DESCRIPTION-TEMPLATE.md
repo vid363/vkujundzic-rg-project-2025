@@ -1,14 +1,17 @@
-# {NAME-OF-THE-PROJECT}
+# vkujundzic-rg-project-2025
 
-{INDEX} - {STUDENT-FULL-NAME}  
+95/2022- Vid Kujundzic  
 {PROJECT DESCRIPTION}
 
 ## Controls
 
-{BUTTON1} -> {ACTION1}  
-{BUTTON2} -> {ACTION2}  
-...  
-{BUTTONN} -> {ACTIONN}
+W -> Camera forwards
+
+A -> Camera left
+
+S -> Camera backwards
+
+D -> Camera right
 
 ## Features
 
