@@ -12,6 +12,9 @@
       "barn": {
         "path": "barn4/scene.gltf",
         "flip_uvs": true
+      },
+      "desert": {
+        "path": "desert_stone_ground/scene.gltf"
       }
     }
   },
