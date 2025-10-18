@@ -2,7 +2,7 @@
   "resources": {
     "models": {
       "ak47": {
-        "path": "ak47/AK47.obj",
+        "path": "ak47/scene.gltf",
         "flip_uvs": true
       },
       "heli": {
@@ -14,7 +14,12 @@
         "flip_uvs": true
       },
       "desert": {
-        "path": "desert_stone_ground/scene.gltf"
+        "path": "desert_stone_ground/scene.gltf",
+        "flip_uvs": true
+      },
+      "truck": {
+        "path": "military_cargo_truck/scene.gltf",
+        "flip_uvs": true
       }
     }
   },

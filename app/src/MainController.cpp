@@ -58,7 +58,7 @@ namespace app {
         engine::graphics::OpenGL::clear_buffers();
     }
 
-    void MainController::draw() { draw_desert(); draw_ak47(); draw_heli(); draw_barn(); draw_skybox();}
+    void MainController::draw() { draw_desert(); draw_ak47(); draw_heli(); draw_barn(); draw_truck(); draw_skybox();}
 
     void MainController::draw_ak47() {
         auto resources = get<engine::resources::ResourcesController>();
@@ -73,9 +73,11 @@ namespace app {
         shader->set_mat4("view", graphics->camera()->view_matrix());
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-5.0f, 1.0f, -5.0f));
-        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.05f));
+        model = glm::translate(model, glm::vec3(4.63f, 0.48f, -6.0f));
+        model = glm::rotate(model, glm::radians(240.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(60.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.15f));
         shader->set_mat4("model", model);
 
         ak47->draw(shader);
@@ -95,6 +97,8 @@ namespace app {
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 6.0f, -5.0f));
+        model = glm::rotate(model, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
         model = glm::scale(model, glm::vec3(0.8f));
         shader->set_mat4("model", model);
 
@@ -115,12 +119,34 @@ namespace app {
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(10.0f, 2.5f, -5.0f));
-        model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
+        // model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
         model = glm::scale(model, glm::vec3(5.0f));
         shader->set_mat4("model", model);
 
         barn->draw(shader);
     }
+
+    void MainController::draw_truck() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model* truck = resources->model("truck");
+        engine::resources::Shader *shader = resources->shader("basic");
+
+        shader->use();
+
+        shader->set_mat4("projection", graphics->projection_matrix());
+        shader->set_mat4("view", graphics->camera()->view_matrix());
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(3.0f, 0.7f, -3.0f));
+        model = glm::rotate(model, glm::radians(150.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
+        model = glm::scale(model, glm::vec3(1.5f));
+        shader->set_mat4("model", model);
+
+        truck->draw(shader);
+    }
+
 
     void MainController::draw_desert() {
         auto resources = get<engine::resources::ResourcesController>();
@@ -136,7 +162,6 @@ namespace app {
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-        // model = glm::scale(model, glm::vec3(1.0f));
         shader->set_mat4("model", model);
 
         desert->draw(shader);

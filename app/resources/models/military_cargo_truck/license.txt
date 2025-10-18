@@ -1,0 +1,8 @@
+Model Information:
+* title:	Military_cargo_truck
+* source:	https://sketchfab.com/3d-models/military-cargo-truck-3c9b659fad234ece861c1568935b324d
+* author:	Trident.AI (https://sketchfab.com/Trident.AI)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

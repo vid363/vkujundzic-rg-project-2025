@@ -26,6 +26,8 @@ namespace app {
 
         void draw_desert();
 
+        void draw_truck();
+
         void draw_skybox();
 
         void end_draw() override;
