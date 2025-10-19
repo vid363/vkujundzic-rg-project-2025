@@ -10,7 +10,6 @@
 
 namespace app {
 
-    // TODO: Maybe move to seperate
     class MainPlatformEventObserver : public engine::platform::PlatformEventObserver {
         public:
             void on_mouse_move(engine::platform::MousePosition position) override;
@@ -213,7 +212,6 @@ namespace app {
 
         engine::resources::Model *desert = resources->model("desert");
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
         shader->set_mat4("model", model);
 
         desert->draw(shader);
@@ -262,6 +260,11 @@ namespace app {
         if (platform->key(engine::platform::KEY_LEFT_SHIFT).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::DOWN, movement_speed); }
 
         if (platform->key(engine::platform::KeyId::KEY_L).state() == engine::platform::Key::State::JustPressed) { isCameraTorchOn = !isCameraTorchOn; }
+
+        // Prevent camera from going below the ground
+        if (!can_camera_go_below_ground && camera->Position.y < 0.2) {
+            camera->Position.y = 0.2f;
+        }
 
         auto mouse = platform->mouse();
         camera->rotate_camera(mouse.dx, mouse.dy);

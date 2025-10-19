@@ -47,6 +47,12 @@ namespace app {
                 ImGui::EndTabItem();
             }
 
+            if (ImGui::BeginTabItem("Camera movement")) {
+                ImGui::Checkbox("Can camera go underground", &mainController->can_camera_go_below_ground);
+
+                ImGui::EndTabItem();
+            }
+
             ImGui::EndTabBar();
         }
 

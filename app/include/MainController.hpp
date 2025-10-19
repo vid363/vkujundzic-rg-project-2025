@@ -46,6 +46,7 @@ namespace app {
         int material_specular = 1;
         float material_shininess = 128.0f;
 
+        bool can_camera_go_below_ground = false;
     private:
         void initialize() override;
 
