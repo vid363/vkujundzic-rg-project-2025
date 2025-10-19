@@ -247,7 +247,7 @@ namespace app {
         auto camera = graphics->camera();
 
         float dt = platform->dt();
-        float movement_speed = dt * this->get_speed();
+        float movement_speed = dt * this->speed;
 
         if (platform->key(engine::platform::KEY_W).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::FORWARD, movement_speed); }
 
