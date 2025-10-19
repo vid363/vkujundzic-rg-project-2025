@@ -57,6 +57,11 @@ struct SpotLight {
     float quadriatic;
 };
 
+struct CameraLight {
+    bool enabled;
+    SpotLight light;
+};
+
 #define NR_SPOT_LIGHTS 2
 
 in vec3 FragPos;
@@ -67,6 +72,7 @@ uniform vec3 viewPos;
 uniform Material material;
 uniform DirLight dirLight;
 uniform SpotLight spotLight[NR_SPOT_LIGHTS];
+uniform CameraLight cameraLight;
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -80,6 +86,9 @@ void main()
 
     for(int i = 0; i < NR_SPOT_LIGHTS; i++)
         result += CalcSpotLight(spotLight[i], norm, FragPos, viewDir);
+
+    if(cameraLight.enabled)
+        result += CalcSpotLight(cameraLight.light, norm, FragPos, viewDir);
 
     FragColor = result;
 }

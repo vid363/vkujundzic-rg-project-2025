@@ -29,6 +29,10 @@ namespace app {
         float linear = 0.09f;
         float quadriatic = 0.032f;
 
+        // Should camera spotlight be on
+        bool isCameraTorchOn = false;
+        bool firstRun = true;
+
         // Material values
         int material_diffuse = 0;
         int material_specular = 1;

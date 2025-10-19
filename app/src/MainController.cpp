@@ -80,7 +80,7 @@ namespace app {
         shader->set_vec3("dirLight.specular", dir_light_specular);
         shader->set_float("dirLight.intensity", dir_light_intensity);
 
-        // auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+
         shader->set_vec3("spotLight[0].direction", glm::vec3(0.91, -0.02f, -0.31f));
         shader->set_vec3("spotLight[0].position", glm::vec3(0.82f, 0.86f, -5.48f));
         shader->set_float("spotLight[0].cutOff", glm::cos(glm::radians(12.5f)));
@@ -108,6 +108,27 @@ namespace app {
         shader->set_float("spotLight[1].constant", constant);
         shader->set_float("spotLight[1].linear", linear);
         shader->set_float("spotLight[1].quadratic", quadriatic);
+
+        shader->set_bool("cameraLight.enabled", isCameraTorchOn);
+
+        if (firstRun || isCameraTorchOn) {
+            firstRun = false;
+
+            auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+            shader->set_vec3("cameraLight.light.direction", camera->Front);
+            shader->set_vec3("cameraLight.light.position", camera->Position);
+            shader->set_float("cameraLight.light.cutOff", glm::cos(glm::radians(12.5f)));
+            shader->set_float("cameraLight.light.outerCutOff", glm::cos(glm::radians(17.5f)));
+            shader->set_float("cameraLight.light.intensity", spot_light_intensity + 0.5f);
+
+            shader->set_vec3("cameraLight.light.ambient", spot_light_ambient);
+            shader->set_vec3("cameraLight.light.diffuse", spot_light_diffuse);
+            shader->set_vec3("cameraLight.light.specular", spot_light_specular);
+
+            shader->set_float("cameraLight.light.constant", constant);
+            shader->set_float("cameraLight.light.linear", linear);
+            shader->set_float("cameraLight.light.quadratic", quadriatic);
+        }
 
         return shader;
     }
@@ -239,6 +260,8 @@ namespace app {
         if (platform->key(engine::platform::KEY_SPACE).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::UP, movement_speed); }
 
         if (platform->key(engine::platform::KEY_LEFT_SHIFT).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::DOWN, movement_speed); }
+
+        if (platform->key(engine::platform::KeyId::KEY_L).state() == engine::platform::Key::State::JustPressed) { isCameraTorchOn = !isCameraTorchOn; }
 
         auto mouse = platform->mouse();
         camera->rotate_camera(mouse.dx, mouse.dy);
