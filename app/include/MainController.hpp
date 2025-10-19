@@ -2,6 +2,8 @@
 #define MAINCONTROLLER_HPP
 
 #include <engine/core/Controller.hpp>
+#include <glm/glm.hpp>
+#include <engine/resources/Shader.hpp>
 
 namespace app {
     class MainController final : public engine::core::Controller {
@@ -10,9 +12,22 @@ namespace app {
     private:
         float speed = 3.0f;
 
+        // Light values
+        glm::vec3 light_dir = glm::vec3(1.0f, -1.0f, -1.0f);
+        glm::vec3 light_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+        glm::vec3 light_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
+        glm::vec3 light_specular = glm::vec3(1.0f, 1.0f, 1.0f);
+
+        // Material values
+        int diffuse = 0;
+        int specular = 1;
+        float shininess = 32.0f;
+
         void initialize() override;
 
         bool loop() override;
+
+        engine::resources::Shader* create_shader(const std::string& shader);
 
         void begin_draw() override;
 
