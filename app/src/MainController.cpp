@@ -71,9 +71,9 @@ namespace app {
 
 
         if (shader_name == "directional") {
-            shader->set_int("material.diffuse", diffuse);
-            shader->set_int("material.specular", specular);
-            shader->set_float("material.shininess", shininess);
+            shader->set_int("material.diffuse", material_diffuse);
+            shader->set_int("material.specular", material_specular);
+            shader->set_float("material.shininess", material_shininess);
 
             shader->set_vec3("light.direction", light_dir);
             shader->set_vec3("light.ambient", light_ambient);

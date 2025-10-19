@@ -19,9 +19,9 @@ namespace app {
         glm::vec3 light_specular = glm::vec3(1.0f, 1.0f, 1.0f);
 
         // Material values
-        int diffuse = 0;
-        int specular = 1;
-        float shininess = 32.0f;
+        int material_diffuse = 0;
+        int material_specular = 1;
+        float material_shininess = 64.0f;
 
         void initialize() override;
 
