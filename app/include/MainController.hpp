@@ -13,10 +13,21 @@ namespace app {
         float speed = 3.0f;
 
         // Light values
-        glm::vec3 light_dir = glm::vec3(1.0f, -1.0f, -1.0f);
-        glm::vec3 light_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
-        glm::vec3 light_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
-        glm::vec3 light_specular = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 dir_light_dir = glm::vec3(1.0f, -1.0f, -1.0f);
+        glm::vec3 dir_light_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+        glm::vec3 dir_light_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
+        glm::vec3 dir_light_specular = glm::vec3(1.0f, 1.0f, 1.0f);
+        float dir_light_intensity = 0.5f;
+
+        // Spotlight values
+        glm::vec3 spot_light_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+        glm::vec3 spot_light_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
+        glm::vec3 spot_light_specular = glm::vec3(1.0f, 1.0f, 1.0f);
+        float spot_light_intensity = 1.0f;
+
+        float constant = 1.0f;
+        float linear = 0.09f;
+        float quadriatic = 0.032f;
 
         // Material values
         int material_diffuse = 0;
@@ -27,7 +38,7 @@ namespace app {
 
         bool loop() override;
 
-        engine::resources::Shader* create_shader(const std::string& shader);
+        engine::resources::Shader* create_model_shader();
 
         void begin_draw() override;
 
