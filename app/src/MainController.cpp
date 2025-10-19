@@ -81,6 +81,28 @@ namespace app {
             shader->set_vec3("light.specular", light_specular);
         }
 
+        if (shader_name == "spotlight") {
+            shader->set_int("material.diffuse", material_diffuse);
+            shader->set_int("material.specular", material_specular);
+            shader->set_float("material.shininess", material_shininess);
+
+            auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+            // shader->set_vec3("light.direction", light_dir);
+            shader->set_vec3("light.direction", camera->Front);
+            // shader->set_vec3("light.position", glm::vec3(-1.0f, 2.0f, -1.0f));
+            shader->set_vec3("light.position", camera->Position);
+            shader->set_float("light.cutOff", glm::cos(glm::radians(12.5f)));
+            shader->set_float("light.outerCutOff", glm::cos(glm::radians(17.5f)));
+
+            shader->set_float("light.constant", 1.0f);
+            shader->set_float("light.linear", 0.09f);
+            shader->set_float("light.quadratic", 0.032f);
+
+            shader->set_vec3("light.ambient", light_ambient);
+            shader->set_vec3("light.diffuse", light_diffuse);
+            shader->set_vec3("light.specular", light_specular);
+        }
+
         return shader;
     }
 
@@ -127,7 +149,7 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_shader( "directional");
+        engine::resources::Shader* shader = create_shader( "spotlight");
 
         engine::resources::Model *barn = resources->model("barn");
         glm::mat4 model = glm::mat4(1.0f);
@@ -174,6 +196,8 @@ namespace app {
 
     void MainController::draw_skybox() {
         auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
+
+        // No need to use create_shader func for skybox
         auto skybox = resources->skybox("night_skybox");
         auto shader = resources->shader("skybox");
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
