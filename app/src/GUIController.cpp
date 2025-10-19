@@ -34,9 +34,15 @@ namespace app {
             }
 
             if (ImGui::BeginTabItem("Light")) {
-                ImGui::DragFloat3("Ambient color", &mainController->dir_light_ambient.x, 0.01, 0.0, 100.0);
-                ImGui::DragFloat3("Diffuse color", &mainController->dir_light_diffuse.x, 0.01, 0.0, 100.0);
-                ImGui::DragFloat3("Specular color", &mainController->dir_light_specular.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Directional light ambient color", &mainController->dir_light_ambient.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Directional light diffuse color", &mainController->dir_light_diffuse.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Directional light specular color", &mainController->dir_light_specular.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat("Directional light intensity", &mainController->dir_light_intensity, 0.01, 0.0, 1.0);
+
+                ImGui::DragFloat3("Camera spotlight ambient color", &mainController->camera_spotlight_ambient.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Camera spotlight diffuse color", &mainController->camera_spotlight_diffuse.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Camera spotlight specular color", &mainController->camera_spotlight_specular.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat("Camera spotlight intensity", &mainController->camera_spotlight_intensity, 0.01, 0.0, 1.0);
 
                 ImGui::EndTabItem();
             }
