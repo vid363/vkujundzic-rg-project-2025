@@ -69,39 +69,28 @@ namespace app {
         shader->set_mat4("projection", graphics->projection_matrix());
         shader->set_mat4("view", graphics->camera()->view_matrix());
 
+        shader->set_int("material.diffuse", material_diffuse);
+        shader->set_int("material.specular", material_specular);
+        shader->set_float("material.shininess", material_shininess);
 
-        if (shader_name == "directional") {
-            shader->set_int("material.diffuse", material_diffuse);
-            shader->set_int("material.specular", material_specular);
-            shader->set_float("material.shininess", material_shininess);
+        shader->set_vec3("dirLight.direction", light_dir);
+        shader->set_vec3("dirLight.ambient", light_ambient);
+        shader->set_vec3("dirLight.diffuse", light_diffuse);
+        shader->set_vec3("dirLight.specular", light_specular);
 
-            shader->set_vec3("light.direction", light_dir);
-            shader->set_vec3("light.ambient", light_ambient);
-            shader->set_vec3("light.diffuse", light_diffuse);
-            shader->set_vec3("light.specular", light_specular);
-        }
+        auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+        shader->set_vec3("spotLight.direction", camera->Front);
+        shader->set_vec3("spotLight.position", camera->Position);
+        shader->set_float("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        shader->set_float("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 
-        if (shader_name == "spotlight") {
-            shader->set_int("material.diffuse", material_diffuse);
-            shader->set_int("material.specular", material_specular);
-            shader->set_float("material.shininess", material_shininess);
+        shader->set_vec3("spotLight.ambient", light_ambient);
+        shader->set_vec3("spotLight.diffuse", light_diffuse);
+        shader->set_vec3("spotLight.specular", light_specular);
 
-            auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
-            // shader->set_vec3("light.direction", light_dir);
-            shader->set_vec3("light.direction", camera->Front);
-            // shader->set_vec3("light.position", glm::vec3(-1.0f, 2.0f, -1.0f));
-            shader->set_vec3("light.position", camera->Position);
-            shader->set_float("light.cutOff", glm::cos(glm::radians(12.5f)));
-            shader->set_float("light.outerCutOff", glm::cos(glm::radians(17.5f)));
-
-            shader->set_float("light.constant", 1.0f);
-            shader->set_float("light.linear", 0.09f);
-            shader->set_float("light.quadratic", 0.032f);
-
-            shader->set_vec3("light.ambient", light_ambient);
-            shader->set_vec3("light.diffuse", light_diffuse);
-            shader->set_vec3("light.specular", light_specular);
-        }
+        shader->set_float("spotLight.constant", 1.0f);
+        shader->set_float("spotLight.linear", 0.09f);
+        shader->set_float("spotLight.quadratic", 0.032f);
 
         return shader;
     }
@@ -113,7 +102,7 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_shader( "directional");
+        engine::resources::Shader* shader = create_shader( "model_shader");
 
         engine::resources::Model *ak47 = resources->model("ak47");
         glm::mat4 model = glm::mat4(1.0f);
@@ -132,7 +121,7 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_shader( "directional");
+        engine::resources::Shader* shader = create_shader( "model_shader");
 
         engine::resources::Model *heli = resources->model("heli");
         glm::mat4 model = glm::mat4(1.0f);
@@ -149,7 +138,7 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_shader( "spotlight");
+        engine::resources::Shader* shader = create_shader( "model_shader");
 
         engine::resources::Model *barn = resources->model("barn");
         glm::mat4 model = glm::mat4(1.0f);
@@ -165,7 +154,7 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_shader( "directional");
+        engine::resources::Shader* shader = create_shader( "model_shader");
 
         engine::resources::Model *jeep = resources->model("jeep");
         glm::mat4 model = glm::mat4(1.0f);
@@ -183,7 +172,7 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_shader( "directional");
+        engine::resources::Shader* shader = create_shader( "model_shader");
 
         engine::resources::Model *desert = resources->model("desert");
         glm::mat4 model = glm::mat4(1.0f);
