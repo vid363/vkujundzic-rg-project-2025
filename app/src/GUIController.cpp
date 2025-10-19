@@ -1,6 +1,7 @@
+#include "MainController.hpp"
 #include "imgui.h"
-#include <engine/core/Engine.hpp>
 #include <GUIController.hpp>
+#include <engine/core/Engine.hpp>
 #include <engine/graphics/GraphicsController.hpp>
 
 namespace app {
@@ -14,16 +15,34 @@ namespace app {
     }
 
     void GUIController::draw() {
+        auto mainController = engine::core::Controller::get<app::MainController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
         auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
         graphics->begin_gui();
-
-        ImGui::Begin("Camera info");
-
         const auto &c = *camera;
-        ImGui::Text("Camera position: (%f, %f, %f)", c.Position.x, c.Position.y, c.Position.z);
-        ImGui::Text("(Yaw, Pitch): (%f, %f)", c.Yaw, c.Pitch);
-        ImGui::Text("Camera front: (%f, %f, %f)", c.Front.x, c.Front.y, c.Front.z);
+
+        ImGui::Begin("INFO");
+
+        if (ImGui::BeginTabBar("TABS")) {
+            if (ImGui::BeginTabItem("Camera")) {
+
+                ImGui::Text("Camera position: (%f, %f, %f)", c.Position.x, c.Position.y, c.Position.z);
+                ImGui::Text("(Yaw, Pitch): (%f, %f)", c.Yaw, c.Pitch);
+                ImGui::Text("Camera front: (%f, %f, %f)", c.Front.x, c.Front.y, c.Front.z);
+
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Light")) {
+                ImGui::DragFloat3("Ambient color", &mainController->dir_light_ambient.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Diffuse color", &mainController->dir_light_diffuse.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Specular color", &mainController->dir_light_specular.x, 0.01, 0.0, 100.0);
+
+                ImGui::EndTabItem();
+            }
+
+            ImGui::EndTabBar();
+        }
 
         ImGui::End();
         graphics->end_gui();
