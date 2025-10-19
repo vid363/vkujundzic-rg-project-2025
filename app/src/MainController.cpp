@@ -85,7 +85,7 @@ namespace app {
     }
 
 
-    void MainController::draw() { draw_desert(); draw_ak47(); draw_heli(); draw_barn(); draw_truck(); draw_skybox();}
+    void MainController::draw() { draw_desert(); draw_ak47(); draw_heli(); draw_barn(); draw_jeep(); draw_skybox();}
 
     void MainController::draw_ak47() {
         auto resources = get<engine::resources::ResourcesController>();
@@ -139,20 +139,21 @@ namespace app {
         barn->draw(shader);
     }
 
-    void MainController::draw_truck() {
+    void MainController::draw_jeep() {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
         engine::resources::Shader* shader = create_shader( "directional");
 
-        engine::resources::Model *truck = resources->model("truck");
+        engine::resources::Model *jeep = resources->model("jeep");
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(3.0f, 0.7f, -3.0f));
-        model = glm::rotate(model, glm::radians(150.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
-        model = glm::scale(model, glm::vec3(1.5f));
+        model = glm::translate(model, glm::vec3(-2.0f, 0.6f, -4.0f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(110.0f), glm::vec3(0.0f, 0.0f, 1.0f ));
+        model = glm::scale(model, glm::vec3(0.7f));
         shader->set_mat4("model", model);
 
-        truck->draw(shader);
+        jeep->draw(shader);
     }
 
 

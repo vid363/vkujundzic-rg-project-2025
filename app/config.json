@@ -17,8 +17,8 @@
         "path": "desert_stone_ground/scene.gltf",
         "flip_uvs": true
       },
-      "truck": {
-        "path": "military_cargo_truck/scene.gltf",
+      "jeep": {
+        "path": "jeep/scene.gltf",
         "flip_uvs": true
       }
     }

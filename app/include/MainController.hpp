@@ -21,7 +21,7 @@ namespace app {
         // Material values
         int material_diffuse = 0;
         int material_specular = 1;
-        float material_shininess = 64.0f;
+        float material_shininess = 128.0f;
 
         void initialize() override;
 
@@ -41,7 +41,7 @@ namespace app {
 
         void draw_desert();
 
-        void draw_truck();
+        void draw_jeep();
 
         void draw_skybox();
 
