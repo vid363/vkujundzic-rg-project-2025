@@ -20,14 +20,22 @@ namespace app {
         float dir_light_intensity = 0.5f;
 
         // Spotlight values
-        glm::vec3 spot_light_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
-        glm::vec3 spot_light_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
-        glm::vec3 spot_light_specular = glm::vec3(1.0f, 1.0f, 1.0f);
-        float spot_light_intensity = 1.0f;
+        glm::vec3 spotlight_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+        glm::vec3 spotlight_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
+        glm::vec3 spotlight_specular = glm::vec3(1.0f, 1.0f, 1.0f);
+        float spotlight_intensity = 1.0f;
 
         float constant = 1.0f;
         float linear = 0.09f;
         float quadriatic = 0.032f;
+
+
+        // Camera spotlight values
+        glm::vec3 camera_spotlight_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+        glm::vec3 camera_spotlight_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
+        glm::vec3 camera_spotlight_specular = glm::vec3(1.0f, 1.0f, 1.0f);
+        float camera_spotlight_intensity = 1.0f;
+
 
         // Should camera spotlight be on
         bool isCameraTorchOn = false;

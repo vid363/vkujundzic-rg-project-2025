@@ -85,11 +85,11 @@ namespace app {
         shader->set_vec3("spotLight[0].position", glm::vec3(0.82f, 0.86f, -5.48f));
         shader->set_float("spotLight[0].cutOff", glm::cos(glm::radians(12.5f)));
         shader->set_float("spotLight[0].outerCutOff", glm::cos(glm::radians(17.5f)));
-        shader->set_float("spotLight[0].intensity", spot_light_intensity);
+        shader->set_float("spotLight[0].intensity", spotlight_intensity);
 
-        shader->set_vec3("spotLight[0].ambient", spot_light_ambient);
-        shader->set_vec3("spotLight[0].diffuse", spot_light_diffuse);
-        shader->set_vec3("spotLight[0].specular", spot_light_specular);
+        shader->set_vec3("spotLight[0].ambient", spotlight_ambient);
+        shader->set_vec3("spotLight[0].diffuse", spotlight_diffuse);
+        shader->set_vec3("spotLight[0].specular", spotlight_specular);
 
         shader->set_float("spotLight[0].constant", constant);
         shader->set_float("spotLight[0].linear", linear);
@@ -99,11 +99,11 @@ namespace app {
         shader->set_vec3("spotLight[1].position", glm::vec3(1.17f, 0.86f, -5.72f));
         shader->set_float("spotLight[1].cutOff", glm::cos(glm::radians(12.5f)));
         shader->set_float("spotLight[1].outerCutOff", glm::cos(glm::radians(17.5f)));
-        shader->set_float("spotLight[1].intensity", spot_light_intensity);
+        shader->set_float("spotLight[1].intensity", spotlight_intensity);
 
-        shader->set_vec3("spotLight[1].ambient", spot_light_ambient);
-        shader->set_vec3("spotLight[1].diffuse", spot_light_diffuse);
-        shader->set_vec3("spotLight[1].specular", spot_light_specular);
+        shader->set_vec3("spotLight[1].ambient", spotlight_ambient);
+        shader->set_vec3("spotLight[1].diffuse", spotlight_diffuse);
+        shader->set_vec3("spotLight[1].specular", spotlight_specular);
 
         shader->set_float("spotLight[1].constant", constant);
         shader->set_float("spotLight[1].linear", linear);
@@ -119,11 +119,11 @@ namespace app {
             shader->set_vec3("cameraLight.light.position", camera->Position);
             shader->set_float("cameraLight.light.cutOff", glm::cos(glm::radians(12.5f)));
             shader->set_float("cameraLight.light.outerCutOff", glm::cos(glm::radians(17.5f)));
-            shader->set_float("cameraLight.light.intensity", spot_light_intensity + 0.5f);
+            shader->set_float("cameraLight.light.intensity", camera_spotlight_intensity + 0.5f);
 
-            shader->set_vec3("cameraLight.light.ambient", spot_light_ambient);
-            shader->set_vec3("cameraLight.light.diffuse", spot_light_diffuse);
-            shader->set_vec3("cameraLight.light.specular", spot_light_specular);
+            shader->set_vec3("cameraLight.light.ambient", camera_spotlight_ambient);
+            shader->set_vec3("cameraLight.light.diffuse", camera_spotlight_diffuse);
+            shader->set_vec3("cameraLight.light.specular", camera_spotlight_specular);
 
             shader->set_float("cameraLight.light.constant", constant);
             shader->set_float("cameraLight.light.linear", linear);
