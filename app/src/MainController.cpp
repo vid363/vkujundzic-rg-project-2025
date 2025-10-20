@@ -135,7 +135,15 @@ namespace app {
         return shader;
     }
 
-    void MainController::draw() { draw_jeep(); draw_jeep_lights(); draw_desert(); draw_ak47(); draw_heli(); draw_barn(); draw_skybox();}
+    void MainController::draw() {
+        draw_jeep();
+        draw_jeep_lights();
+        draw_desert();draw_ak47();
+        update_sequence();
+        draw_heli();
+        draw_barn();
+        draw_skybox();;
+    }
 
     void MainController::draw_ak47() {
         auto resources = get<engine::resources::ResourcesController>();
@@ -160,9 +168,10 @@ namespace app {
 
         engine::resources::Model *heli = resources->model("heli");
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 6.0f, -5.0f));
-        model = glm::rotate(model, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f ));
-        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
+        model = glm::translate(model, helicopter.position);
+        model = glm::rotate(model, glm::radians(helicopter.rotation_x), glm::vec3(1.0f, 0.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(helicopter.rotation_y), glm::vec3(0.0f, 1.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(helicopter.rotation_z), glm::vec3(0.0f, 0.0f, 1.0f ));
         model = glm::scale(model, glm::vec3(0.8f));
 
         engine::resources::Shader* shader = create_model_shader(&model);
@@ -185,8 +194,6 @@ namespace app {
         barn->draw(shader);
     }
 
-    bool lightSet = false;
-
     void MainController::draw_jeep_lights() {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
@@ -197,7 +204,7 @@ namespace app {
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, jeep_info.light1_pos);
-        model = glm::rotate(model, glm::radians(jeep_info.jeep_rotation_z), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(jeep_info.rotation_z), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, scaleMatrix);
 
         engine::resources::Shader* shader = resources->shader("light_source");
@@ -213,7 +220,7 @@ namespace app {
 
         model = glm::mat4(1.0f);
         model = glm::translate(model, jeep_info.light2_pos);
-        model = glm::rotate(model, glm::radians(jeep_info.jeep_rotation_z), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(jeep_info.rotation_z), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::scale(model, scaleMatrix);
         shader->set_mat4("model", model);
 
@@ -226,18 +233,11 @@ namespace app {
 
         engine::resources::Model *jeep = resources->model("jeep");
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-2.0f, 0.6f, -4.0f));
+        model = glm::translate(model, jeep_info.pos);
         // Base rotation, for some reason it renders vertically without it
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f ));
-        model = glm::rotate(model, glm::radians(jeep_info.jeep_rotation_z), glm::vec3(0.0f, 0.0f, 1.0f ));
+        model = glm::rotate(model, glm::radians(jeep_info.rotation_z), glm::vec3(0.0f, 0.0f, 1.0f ));
         model = glm::scale(model, glm::vec3(0.7f));
-        if (!lightSet) {
-            jeep_info.light1_direction = glm::vec3(1.0f, -0.09f, -0.51);
-            jeep_info.light2_direction = glm::vec3(1.0f, -0.09f, -0.31);
-            jeep_info.light1_pos = glm::vec3(0.71f, 0.87f, -5.43f);
-            jeep_info.light2_pos = glm::vec3(0.98f, 0.87f, -4.65f);
-            lightSet = true;
-        }
 
         engine::resources::Shader* shader = create_model_shader(&model);
 
@@ -272,6 +272,21 @@ namespace app {
         platform->swap_buffers();
     }
 
+    void MainController::update_sequence() {
+        if (!action_sequence)
+            return;
+
+        auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+        float dt = platform->dt();
+
+        helicopter.position.z += dt * helicopter.speed;
+
+        if (helicopter.position.z > 100.0F) {
+            helicopter.position.z = -100.0F;
+            action_sequence = !action_sequence;
+        }
+    }
+
     void MainController::update() { update_camera(); }
 
     void MainController::update_camera() {
@@ -298,6 +313,8 @@ namespace app {
         if (platform->key(engine::platform::KEY_LEFT_SHIFT).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::DOWN, movement_speed); }
 
         if (platform->key(engine::platform::KeyId::KEY_L).state() == engine::platform::Key::State::JustPressed) { isCameraTorchOn = !isCameraTorchOn; }
+
+        if (platform->key(engine::platform::KeyId::KEY_O).state() == engine::platform::Key::State::JustPressed) { action_sequence = !action_sequence; }
 
         // Prevent camera from going below the ground
         if (!can_camera_go_below_ground && camera->Position.y < 0.2) {
