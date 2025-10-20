@@ -46,6 +46,7 @@ namespace app {
         float material_shininess = 128.0f;
 
         bool can_camera_go_below_ground = false;
+
         bool action_sequence = false;
 
         struct Jeep {
@@ -58,12 +59,22 @@ namespace app {
         };
 
         struct Helicopter {
-            glm::vec3 position = glm::vec3(0.0f, 6.0f, -100.0f);
+            glm::vec3 position = glm::vec3(0.0f, 6.0f, -20.0f);
             glm::vec3 direction;
             float rotation_x = 30.0f;
             float rotation_y = 0.0f;
             float rotation_z = 0.0f;
             float speed = 10.0f;
+            float rotation_x_before_landing = 30.0f;
+            float rotation_y_before_landing = 0.0f;
+            float rotation_z_before_landing = 0.0f;
+            bool reached_landing_dest = false;
+            bool landing = false;
+            bool stabilizing = true;
+            int angle_sign = 1;
+            bool switched_stabilization_direction = false;
+            bool stabilized = false;
+            bool landed = false;
         };
 
         Helicopter helicopter;

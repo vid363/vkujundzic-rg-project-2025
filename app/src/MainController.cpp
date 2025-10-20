@@ -272,6 +272,7 @@ namespace app {
         platform->swap_buffers();
     }
 
+    // Currently only goes along z axis
     void MainController::update_sequence() {
         if (!action_sequence)
             return;
@@ -279,11 +280,41 @@ namespace app {
         auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
         float dt = platform->dt();
 
-        helicopter.position.z += dt * helicopter.speed;
+        // Move to some coordinate depending on the angle, right now it is hardcoded
+        if (!helicopter.reached_landing_dest) {
+            helicopter.position.z += dt * helicopter.speed * helicopter.angle_sign;
 
-        if (helicopter.position.z > 100.0F) {
-            helicopter.position.z = -100.0F;
-            action_sequence = !action_sequence;
+            if (helicopter.position.z > -15.0f){
+                helicopter.reached_landing_dest = true;
+                helicopter.rotation_x_before_landing = -helicopter.rotation_x / 2.0f;
+                spdlog::info("Reached stabilizing");
+            }
+        }
+        //Reached coordinates, start stabilizing
+        else if (!helicopter.stabilized) {
+            helicopter.rotation_x -= dt * helicopter.angle_sign * helicopter.speed * 2;
+            if (helicopter.rotation_x < helicopter.rotation_x_before_landing
+                && !helicopter.switched_stabilization_direction) {
+                spdlog::info("Switched stabilization direction");
+                helicopter.switched_stabilization_direction = true;
+                helicopter.angle_sign = -helicopter.angle_sign;
+            }
+
+            if (helicopter.rotation_x * helicopter.angle_sign <= 0.0f
+                && helicopter.switched_stabilization_direction) {
+                spdlog::info("Chopper is stable");
+                helicopter.rotation_x = 0.0f;
+                helicopter.stabilized = true;
+            }
+        }
+        // Stabilized, now descend
+        else if (!helicopter.landed) {
+            helicopter.position.y -= dt * helicopter.speed / 2.5f;
+            if (helicopter.position.y <= -1.46f) {
+                helicopter.landed = true;
+                action_sequence = false;
+                spdlog::info("Chopper landed");
+            }
         }
     }
 

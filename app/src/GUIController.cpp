@@ -47,6 +47,25 @@ namespace app {
                 ImGui::EndTabItem();
             }
 
+            if (ImGui::BeginTabItem("Jeep Light")) {
+                ImGui::DragFloat3("Spotlight1 direction", &mainController->jeep_info.light1_direction.x, 0.01, -1.0, 1.0);
+                ImGui::DragFloat3("Spotlight1 pos", &mainController->jeep_info.light1_pos.x, 0.01, -100.0, 100.0);
+
+                ImGui::DragFloat3("Spotlight2 direction", &mainController->jeep_info.light2_direction.x, 0.01, -1.0, 1.0);
+                ImGui::DragFloat3("Spotlight2 pos", &mainController->jeep_info.light2_pos.x, 0.01, -100.0, 100.0);
+
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Helicopter")) {
+                ImGui::DragFloat3("Heli positiong", &mainController->helicopter.position.x, 0.01, -100.0, 100.0);
+                ImGui::DragFloat("Heli rotation x", &mainController->helicopter.rotation_x, 0.01, -100.0, 100.0);
+                ImGui::DragFloat("Heli rotation x before stabilization", &mainController->helicopter.rotation_y, 0.01, -100.0, 100.0);
+                ImGui::DragFloat("Heli rotation z", &mainController->helicopter.rotation_z, 0.01, -100.0, 100.0);
+
+                ImGui::EndTabItem();
+            }
+
             if (ImGui::BeginTabItem("Camera movement")) {
                 ImGui::Checkbox("Can camera go underground", &mainController->can_camera_go_below_ground);
 
