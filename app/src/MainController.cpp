@@ -5,8 +5,8 @@
 #include "engine/resources/ResourcesController.hpp"
 #include "spdlog/spdlog.h"
 
-#include <MainController.hpp>
 #include <GUIController.hpp>
+#include <MainController.hpp>
 
 namespace app {
 
@@ -138,9 +138,12 @@ namespace app {
     void MainController::draw() {
         draw_jeep();
         draw_jeep_lights();
-        draw_desert();draw_ak47();
-        update_sequence();
-        draw_heli();
+        draw_desert();
+        draw_ak47();
+        if (action_sequence) {
+            update_sequence();
+            draw_heli();
+        }
         draw_barn();
         draw_skybox();;
     }
@@ -169,9 +172,9 @@ namespace app {
         engine::resources::Model *heli = resources->model("heli");
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, helicopter.position);
-        model = glm::rotate(model, glm::radians(helicopter.rotation_x), glm::vec3(1.0f, 0.0f, 0.0f ));
-        model = glm::rotate(model, glm::radians(helicopter.rotation_y), glm::vec3(0.0f, 1.0f, 0.0f ));
-        model = glm::rotate(model, glm::radians(helicopter.rotation_z), glm::vec3(0.0f, 0.0f, 1.0f ));
+        model = glm::rotate(model, glm::radians(helicopter.pitch), glm::vec3(1.0f, 0.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(helicopter.yaw), glm::vec3(0.0f, 1.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(helicopter.roll), glm::vec3(0.0f, 0.0f, 1.0f ));
         model = glm::scale(model, glm::vec3(0.8f));
 
         engine::resources::Shader* shader = create_model_shader(&model);
@@ -282,28 +285,28 @@ namespace app {
 
         // Move to some coordinate depending on the angle, right now it is hardcoded
         if (!helicopter.reached_landing_dest) {
-            helicopter.position.z += dt * helicopter.speed * helicopter.angle_sign;
+            helicopter.move(dt, true, false, false);
 
-            if (helicopter.position.z > -15.0f){
+            if (helicopter.position.z > -20.0f){
                 helicopter.reached_landing_dest = true;
-                helicopter.rotation_x_before_landing = -helicopter.rotation_x / 2.0f;
+                helicopter.pitch_before_stabilizing = -helicopter.pitch / 3.0f;
                 spdlog::info("Reached stabilizing");
             }
         }
         //Reached coordinates, start stabilizing
         else if (!helicopter.stabilized) {
-            helicopter.rotation_x -= dt * helicopter.angle_sign * helicopter.speed * 2;
-            if (helicopter.rotation_x < helicopter.rotation_x_before_landing
+            helicopter.rotate(dt, -helicopter.angle_sign * 2);
+            if (helicopter.pitch < helicopter.pitch_before_stabilizing
                 && !helicopter.switched_stabilization_direction) {
                 spdlog::info("Switched stabilization direction");
                 helicopter.switched_stabilization_direction = true;
                 helicopter.angle_sign = -helicopter.angle_sign;
             }
 
-            if (helicopter.rotation_x * helicopter.angle_sign <= 0.0f
+            if (helicopter.pitch * helicopter.angle_sign <= 0.0f
                 && helicopter.switched_stabilization_direction) {
                 spdlog::info("Chopper is stable");
-                helicopter.rotation_x = 0.0f;
+                helicopter.pitch = 0.0f;
                 helicopter.stabilized = true;
             }
         }
@@ -312,8 +315,20 @@ namespace app {
             helicopter.position.y -= dt * helicopter.speed / 2.5f;
             if (helicopter.position.y <= -1.46f) {
                 helicopter.landed = true;
-                action_sequence = false;
                 spdlog::info("Chopper landed");
+                helicopter.time_landed = time(nullptr);
+            }
+        }
+        // Waiting for 10 seconds to pass then start ascending
+        else if (difftime(time(nullptr), helicopter.time_landed) > 10) {
+            spdlog::info("Chopper ascending");
+            helicopter.move(dt, true, true, false);
+            if (helicopter.pitch < 50.0f)
+                helicopter.rotate(dt, -helicopter.angle_sign * 2);
+
+            if (helicopter.position.z > 100.0f) {
+                helicopter.reset();
+                action_sequence = false;
             }
         }
     }

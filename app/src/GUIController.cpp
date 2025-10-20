@@ -58,10 +58,11 @@ namespace app {
             }
 
             if (ImGui::BeginTabItem("Helicopter")) {
-                ImGui::DragFloat3("Heli positiong", &mainController->helicopter.position.x, 0.01, -100.0, 100.0);
-                ImGui::DragFloat("Heli rotation x", &mainController->helicopter.rotation_x, 0.01, -100.0, 100.0);
-                ImGui::DragFloat("Heli rotation x before stabilization", &mainController->helicopter.rotation_y, 0.01, -100.0, 100.0);
-                ImGui::DragFloat("Heli rotation z", &mainController->helicopter.rotation_z, 0.01, -100.0, 100.0);
+                ImGui::Text("Heli position: (%f, %f, %f)", mainController->helicopter.position.x, mainController->helicopter.position.y, mainController->helicopter.position.z);
+                ImGui::Text("Heli direction: (%f, %f, %f))", mainController->helicopter.direction.x, mainController->helicopter.direction.y, mainController->helicopter.direction.z);
+                ImGui::Text("Heli pitch: %f", mainController->helicopter.pitch);
+                ImGui::Text("Heli yawn: %f", mainController->helicopter.yaw);
+                ImGui::Text("Heli roll: %f", mainController->helicopter.roll);
 
                 ImGui::EndTabItem();
             }
