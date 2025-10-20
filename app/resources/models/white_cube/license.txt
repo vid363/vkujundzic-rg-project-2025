@@ -1,0 +1,11 @@
+Model Information:
+* title:	White Cube
+* source:	https://sketchfab.com/3d-models/white-cube-09e936684d7a46f285727615eb072330
+* author:	abbyfloyd (https://sketchfab.com/abbyfloyd)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "White Cube" (https://sketchfab.com/3d-models/white-cube-09e936684d7a46f285727615eb072330) by abbyfloyd (https://sketchfab.com/abbyfloyd) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -20,6 +20,9 @@
       "jeep": {
         "path": "jeep/scene.gltf",
         "flip_uvs": true
+      },
+      "white_cube": {
+        "path": "white_cube/scene.gltf"
       }
     }
   },

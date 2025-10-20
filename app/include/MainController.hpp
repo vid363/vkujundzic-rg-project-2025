@@ -29,7 +29,6 @@ namespace app {
         float linear = 0.09f;
         float quadriatic = 0.032f;
 
-
         // Camera spotlight values
         glm::vec3 camera_spotlight_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
         glm::vec3 camera_spotlight_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -41,18 +40,29 @@ namespace app {
         bool isCameraTorchOn = false;
         bool firstRun = true;
 
-        // Material valuesww
+        // Material values
         int material_diffuse = 0;
         int material_specular = 1;
         float material_shininess = 128.0f;
 
         bool can_camera_go_below_ground = false;
+
+        struct Jeep {
+            glm::vec3 light1_direction;
+            glm::vec3 light2_direction;
+            glm::vec3 light1_pos;
+            glm::vec3 light2_pos;
+            float jeep_rotation_z = 110.0f;
+        };
+
+        Jeep jeep_info;
+
     private:
         void initialize() override;
 
         bool loop() override;
 
-        engine::resources::Shader* create_model_shader();
+        engine::resources::Shader* create_model_shader(glm::mat4* model);
 
         void begin_draw() override;
 
@@ -67,6 +77,8 @@ namespace app {
         void draw_desert();
 
         void draw_jeep();
+
+        void draw_jeep_lights();
 
         void draw_skybox();
 

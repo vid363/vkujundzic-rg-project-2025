@@ -57,7 +57,8 @@ namespace app {
         engine::graphics::OpenGL::clear_buffers();
     }
 
-    engine::resources::Shader* MainController::create_model_shader() {
+
+    engine::resources::Shader* MainController::create_model_shader(glm::mat4* model) {
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
         auto resources = get<engine::resources::ResourcesController>();
 
@@ -80,8 +81,8 @@ namespace app {
         shader->set_float("dirLight.intensity", dir_light_intensity);
 
 
-        shader->set_vec3("spotLight[0].direction", glm::vec3(0.91, -0.02f, -0.31f));
-        shader->set_vec3("spotLight[0].position", glm::vec3(0.82f, 0.86f, -5.48f));
+        shader->set_vec3("spotLight[0].direction", jeep_info.light1_direction);
+        shader->set_vec3("spotLight[0].position", jeep_info.light1_pos);
         shader->set_float("spotLight[0].cutOff", glm::cos(glm::radians(12.5f)));
         shader->set_float("spotLight[0].outerCutOff", glm::cos(glm::radians(17.5f)));
         shader->set_float("spotLight[0].intensity", spotlight_intensity);
@@ -94,8 +95,8 @@ namespace app {
         shader->set_float("spotLight[0].linear", linear);
         shader->set_float("spotLight[0].quadratic", quadriatic);
 
-        shader->set_vec3("spotLight[1].direction", glm::vec3(0.97f, -0.02f, -0.12f));
-        shader->set_vec3("spotLight[1].position", glm::vec3(1.17f, 0.86f, -5.72f));
+        shader->set_vec3("spotLight[1].direction", jeep_info.light2_direction);
+        shader->set_vec3("spotLight[1].position", jeep_info.light2_pos);
         shader->set_float("spotLight[1].cutOff", glm::cos(glm::radians(12.5f)));
         shader->set_float("spotLight[1].outerCutOff", glm::cos(glm::radians(17.5f)));
         shader->set_float("spotLight[1].intensity", spotlight_intensity);
@@ -129,16 +130,16 @@ namespace app {
             shader->set_float("cameraLight.light.quadratic", quadriatic);
         }
 
+        shader->set_mat4("model", *model);
+
         return shader;
     }
 
-    void MainController::draw() { draw_desert(); draw_ak47(); draw_heli(); draw_barn(); draw_jeep(); draw_skybox();}
+    void MainController::draw() { draw_jeep(); draw_jeep_lights(); draw_desert(); draw_ak47(); draw_heli(); draw_barn(); draw_skybox();}
 
     void MainController::draw_ak47() {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
-
-        engine::resources::Shader* shader = create_model_shader();
 
         engine::resources::Model *ak47 = resources->model("ak47");
         glm::mat4 model = glm::mat4(1.0f);
@@ -148,7 +149,7 @@ namespace app {
         model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::scale(model, glm::vec3(0.15f));
 
-        shader->set_mat4("model", model);
+        engine::resources::Shader* shader = create_model_shader(&model);
 
         ak47->draw(shader);
     }
@@ -157,15 +158,14 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_model_shader();
-
         engine::resources::Model *heli = resources->model("heli");
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 6.0f, -5.0f));
         model = glm::rotate(model, glm::radians(30.0f), glm::vec3(1.0f, 0.0f, 0.0f ));
         model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
         model = glm::scale(model, glm::vec3(0.8f));
-        shader->set_mat4("model", model);
+
+        engine::resources::Shader* shader = create_model_shader(&model);
 
         heli->draw(shader);
     }
@@ -174,31 +174,72 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_model_shader();
-
         engine::resources::Model *barn = resources->model("barn");
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(10.0f, 2.5f, -5.0f));
         // model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
         model = glm::scale(model, glm::vec3(5.0f));
-        shader->set_mat4("model", model);
+
+        engine::resources::Shader* shader = create_model_shader(&model);
 
         barn->draw(shader);
+    }
+
+    bool lightSet = false;
+
+    void MainController::draw_jeep_lights() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *light = resources->model("white_cube");
+
+        glm::vec3 scaleMatrix = glm::vec3(0.08f, 0.06f, 0.08f);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, jeep_info.light1_pos);
+        model = glm::rotate(model, glm::radians(jeep_info.jeep_rotation_z), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, scaleMatrix);
+
+        engine::resources::Shader* shader = resources->shader("light_source");
+        shader->use();
+
+        // engine::resources::Shader* shader = create_model_shader(&model);
+        shader->set_mat4("model", model);
+        shader->set_mat4("projection", graphics->projection_matrix());
+        shader->set_mat4("view", graphics->camera()->view_matrix());
+
+        light->draw(shader);
+
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, jeep_info.light2_pos);
+        model = glm::rotate(model, glm::radians(jeep_info.jeep_rotation_z), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, scaleMatrix);
+        shader->set_mat4("model", model);
+
+        light->draw(shader);
     }
 
     void MainController::draw_jeep() {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_model_shader();
-
         engine::resources::Model *jeep = resources->model("jeep");
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-2.0f, 0.6f, -4.0f));
+        // Base rotation, for some reason it renders vertically without it
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f ));
-        model = glm::rotate(model, glm::radians(110.0f), glm::vec3(0.0f, 0.0f, 1.0f ));
+        model = glm::rotate(model, glm::radians(jeep_info.jeep_rotation_z), glm::vec3(0.0f, 0.0f, 1.0f ));
         model = glm::scale(model, glm::vec3(0.7f));
-        shader->set_mat4("model", model);
+        if (!lightSet) {
+            jeep_info.light1_direction = glm::vec3(1.0f, -0.09f, -0.51);
+            jeep_info.light2_direction = glm::vec3(1.0f, -0.09f, -0.31);
+            jeep_info.light1_pos = glm::vec3(0.71f, 0.87f, -5.43f);
+            jeep_info.light2_pos = glm::vec3(0.98f, 0.87f, -4.65f);
+            lightSet = true;
+        }
+
+        engine::resources::Shader* shader = create_model_shader(&model);
 
         jeep->draw(shader);
     }
@@ -208,12 +249,9 @@ namespace app {
         auto resources = get<engine::resources::ResourcesController>();
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
-        engine::resources::Shader* shader = create_model_shader();
-
         engine::resources::Model *desert = resources->model("desert");
         glm::mat4 model = glm::mat4(1.0f);
-        shader->set_mat4("model", model);
-
+        engine::resources::Shader* shader = create_model_shader(&model);
         desert->draw(shader);
     }
 
