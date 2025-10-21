@@ -62,9 +62,9 @@ namespace app {
         };
 
         struct Helicopter {
-            glm::vec3 position = glm::vec3(0.0f, 6.0f, -100.0f);
+            glm::vec3 position = glm::vec3(0.0f, 20.0f, -100.0f);
             glm::vec3 direction;
-            float pitch = 70.0f;
+            float pitch = 50.0f;
             float yaw = 0.0f;
             float roll = 0.0f;
             float speed = 30.0f;
@@ -73,7 +73,7 @@ namespace app {
             float roll_before_stabilizing = 0.0f;
             bool reached_landing_dest = false;
             bool landing = false;
-            bool stabilizing = true;
+            bool stabilizing = false;
             int angle_sign = 1;
             bool switched_stabilization_direction = false;
             bool stabilized = false;
@@ -99,16 +99,17 @@ namespace app {
             }
 
             void reset() {
-                position = glm::vec3(0.0f, 6.0f, -100.0f);
-                pitch = 70.0f;
+                position = glm::vec3(0.0f, 20.0f, -100.0f);
+                pitch = 50.0f;
                 yaw = 0.0f;
                 roll = 0.0f;
                 speed = 30.0f;
                 pitch_before_stabilizing = 30.0f;
                 yaw_before_stabilizing = 0.0f;
                 roll_before_stabilizing = 0.0f;
+                reached_landing_dest = false;
                 landing = false;
-                stabilizing = true;
+                stabilizing = false;
                 angle_sign = 1;
                 switched_stabilization_direction = false;
                 stabilized = false;

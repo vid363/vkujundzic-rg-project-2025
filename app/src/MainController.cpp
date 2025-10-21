@@ -277,6 +277,7 @@ namespace app {
 
     // Currently only goes along z axis
     void MainController::update_sequence() {
+
         if (!action_sequence)
             return;
 
@@ -290,6 +291,7 @@ namespace app {
             if (helicopter.position.z > -20.0f){
                 helicopter.reached_landing_dest = true;
                 helicopter.pitch_before_stabilizing = -helicopter.pitch / 3.0f;
+
                 spdlog::info("Reached stabilizing");
             }
         }
