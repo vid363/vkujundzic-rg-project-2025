@@ -1,8 +1,10 @@
 # vkujundzic-rg-project-2025
 
 95/2022- Vid Kujundzic  
-Simple scene in a desert with a barn, jeep with turnt lights,
-ak47 resting on the barn and a helicopter above them.
+Simple scene in a desert with a barn, jeep with turnt lights and
+ak47 resting on the barn.
+By pressing the key O, a helicopter will appear, land near the barn then
+take off.
 
 ## Controls
 
@@ -22,13 +24,15 @@ K -> Toggle GUI
 
 L -> Toggle flashlight
 
+O -> Activate helicopter sequence
+
 ## Features
 
 ### Fundamental:
 
 [ X ] Model with lighting
 [ X ] Two types of lighting with customizable colors and movement through GUI or ACTIONS
-[ ] {ACTION_X} --- AFTER_M_SECONDS---Triggers---> {EVENT_A} ---> AFTER_N_SECONDS---Triggers---> {EVENT_B}
+[ X ] {HELICOPTER ARRIVING} --- AFTER 0 SECONDS --- Triggers ---> {HELICOPTER LANDING} ---> AFTER 10 SECONDS---Triggers---> { HELICOPTER TAKING OFF } -> AFTER HELICOPTER FAR FROM BARN -> {SCENE RESET}
 
 ### Group A:
 
