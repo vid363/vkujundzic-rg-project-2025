@@ -37,6 +37,67 @@ namespace app {
 
     }
 
+    void MainController::Helicopter::move(float const dt, glm::vec3 dest, bool forward, bool up, bool side) {
+        direction.z = forward ? cos(glm::radians(yaw)) * cos(glm::radians(pitch)) : 0.0f;
+        direction.y = up ? sin(glm::radians(pitch)) : 0.0f;
+        direction.x = side ? sin(glm::radians(yaw)) * cos(glm::radians(pitch)) : 0.0f;
+
+        // Slow down if intended dest is ground and heli is close
+        std::cout << glm::abs(glm::length(position - dest)) << std::endl;
+        if (dest.y <= 0.0f && glm::abs(glm::length(position - dest)) < 28.0f) speed -= 14 * dt;
+
+        position += dt * speed * direction;
+    }
+
+    void MainController::Helicopter::rotate(float const dt, float pitch, float yaw, float roll) {
+        this->pitch += pitch * dt * rotation_speed;
+        this->yaw += yaw * dt * rotation_speed;
+        this->roll += roll * dt * rotation_speed;
+
+        this->pitch = glm::clamp(this->pitch, -180.0f, 180.0f);
+        this->yaw = glm::clamp(this->yaw, -180.0f, 180.0f);
+        this->roll = glm::clamp(this->roll, -180.0f, 180.0f);
+    }
+
+
+
+    void MainController::Helicopter::stabilize(float dt) {
+        if (pitch < pitch_before_stabilizing && !switched_stabilization_direction
+            && reached_landing_dest) {
+            spdlog::info("Switched stabilization direction");
+            angle_sign *= -1;
+            switched_stabilization_direction = true;
+        }
+
+        rotate(dt, -angle_sign * 2);
+
+        if (switched_stabilization_direction
+            && pitch * angle_sign <= 0.0f) {
+            spdlog::info("Chopper is stable");
+            pitch = 0.0f;
+            stabilized = true;
+        }
+    }
+
+    void MainController::Helicopter::reset() {
+
+        position = glm::vec3(0.0f, 20.0f, -100.0f);
+        pitch = 50.0f;
+        yaw = 0.0f;
+        roll = 0.0f;
+        speed = 30.0f;
+        pitch_before_stabilizing = 30.0f;
+        yaw_before_stabilizing = 0.0f;
+        roll_before_stabilizing = 0.0f;
+        reached_landing_dest = false;
+        landing = false;
+        stabilizing = false;
+        angle_sign = 1;
+        switched_stabilization_direction = false;
+        stabilized = false;
+        landed = false;
+    }
+
     void MainController::initialize() {
         spdlog::info("Initializing MainController...");
         auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
@@ -277,7 +338,6 @@ namespace app {
 
     // Currently only goes along z axis
     void MainController::update_sequence() {
-
         if (!action_sequence)
             return;
 
@@ -286,35 +346,24 @@ namespace app {
 
         // Move to some coordinate depending on the angle, right now it is hardcoded
         if (!helicopter.reached_landing_dest) {
-            helicopter.move(dt, true, false, false);
+            //Only z axis is needed in this example
+            helicopter.move(dt, glm::vec3(0.0f, 0.0f, -25.0f),true, false, false);
 
-            if (helicopter.position.z > -20.0f){
+            // Destination reached
+            if (helicopter.position.z > -25.0f){
                 helicopter.reached_landing_dest = true;
                 helicopter.pitch_before_stabilizing = -helicopter.pitch / 3.0f;
 
                 spdlog::info("Reached stabilizing");
             }
         }
-        //Reached coordinates, start stabilizing
-        else if (!helicopter.stabilized) {
-            helicopter.rotate(dt, -helicopter.angle_sign * 2);
-            if (helicopter.pitch < helicopter.pitch_before_stabilizing
-                && !helicopter.switched_stabilization_direction) {
-                spdlog::info("Switched stabilization direction");
-                helicopter.switched_stabilization_direction = true;
-                helicopter.angle_sign = -helicopter.angle_sign;
-            }
-
-            if (helicopter.pitch * helicopter.angle_sign <= 0.0f
-                && helicopter.switched_stabilization_direction) {
-                spdlog::info("Chopper is stable");
-                helicopter.pitch = 0.0f;
-                helicopter.stabilized = true;
-            }
+        //Reached close to coordinates, start stabilizing
+        if (!helicopter.stabilized && glm::abs(helicopter.position.z - (-20.0f)) < 8.0f) {
+            helicopter.stabilize(dt);
         }
         // Stabilized, now descend
-        else if (!helicopter.landed) {
-            helicopter.position.y -= dt * helicopter.speed / 2.5f;
+        else if (!helicopter.landed && helicopter.stabilized) {
+            helicopter.position.y -= dt * helicopter.speed;
             if (helicopter.position.y <= -1.46f) {
                 helicopter.landed = true;
                 spdlog::info("Chopper landed");
@@ -322,12 +371,18 @@ namespace app {
             }
         }
         // Waiting for 10 seconds to pass then start ascending
-        else if (difftime(time(nullptr), helicopter.time_landed) > 10) {
+        else if (difftime(time(nullptr), helicopter.time_landed) > 10 && helicopter.landed) {
             spdlog::info("Chopper ascending");
-            helicopter.move(dt, true, true, false);
+            helicopter.move(dt, glm::vec3(0.0f, 100.0f, 100.0f), true, true, false);
+
+            helicopter.speed = glm::abs(helicopter.position.z - (-20.0f)) > 15.0f ?
+                helicopter.speed : helicopter.speed + 17 * dt;
+
+            // Point the nose down if not enough
             if (helicopter.pitch < 50.0f)
                 helicopter.rotate(dt, -helicopter.angle_sign * 2);
 
+            // End sequence
             if (helicopter.position.z > 100.0f) {
                 helicopter.reset();
                 action_sequence = false;

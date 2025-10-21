@@ -7,6 +7,8 @@
 #include <engine/core/Controller.hpp>
 #include <engine/resources/Shader.hpp>
 #include <glm/glm.hpp>
+#include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace app {
     class MainController final : public engine::core::Controller {
@@ -61,13 +63,15 @@ namespace app {
             glm::vec3 pos = glm::vec3(-2.0f, 0.6f, -4.0f);
         };
 
-        struct Helicopter {
+        class Helicopter {
+        public:
             glm::vec3 position = glm::vec3(0.0f, 20.0f, -100.0f);
             glm::vec3 direction;
             float pitch = 50.0f;
             float yaw = 0.0f;
             float roll = 0.0f;
             float speed = 30.0f;
+            float rotation_speed = 18.0f;
             float pitch_before_stabilizing = 30.0f;
             float yaw_before_stabilizing = 0.0f;
             float roll_before_stabilizing = 0.0f;
@@ -78,43 +82,16 @@ namespace app {
             bool switched_stabilization_direction = false;
             bool stabilized = false;
             bool landed = false;
-            time_t time_landed;
+            time_t time_landed = time(nullptr) + 99999;
 
             // Can be changed to just go into the direction but requires heli physics
-            void move(float const dt, bool forward = false, bool up = false, bool side = false) {
-                direction.z = forward ? cos(glm::radians(yaw)) * cos(glm::radians(pitch)) : 0.0f;
-                direction.y = up ? sin(glm::radians(pitch)) : 0.0f;
-                direction.x = side ? sin(glm::radians(yaw)) * cos(glm::radians(pitch)) : 0.0f;
-                position += dt * speed * direction;
-            }
+            void move(float const dt, glm::vec3 dest, bool forward = false, bool up = false, bool side = false);
 
-            void rotate(float const dt, float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f) {
-                this->pitch += pitch * dt * speed;
-                this->yaw += yaw * dt * speed;
-                this->roll += roll * dt * speed;
+            void rotate(float const dt, float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f);
 
-                pitch = glm::clamp(pitch, -180.0f, 180.0f);
-                yaw = glm::clamp(pitch, -180.0f, 180.0f);
-                roll = glm::clamp(pitch, -180.0f, 180.0f);
-            }
+            void stabilize(float dt);
 
-            void reset() {
-                position = glm::vec3(0.0f, 20.0f, -100.0f);
-                pitch = 50.0f;
-                yaw = 0.0f;
-                roll = 0.0f;
-                speed = 30.0f;
-                pitch_before_stabilizing = 30.0f;
-                yaw_before_stabilizing = 0.0f;
-                roll_before_stabilizing = 0.0f;
-                reached_landing_dest = false;
-                landing = false;
-                stabilizing = false;
-                angle_sign = 1;
-                switched_stabilization_direction = false;
-                stabilized = false;
-                landed = false;
-            }
+            void reset();
         };
 
         Helicopter helicopter;
