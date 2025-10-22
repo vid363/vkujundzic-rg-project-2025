@@ -23,12 +23,15 @@
       },
       "white_cube": {
         "path": "white_cube/scene.gltf"
+      },
+      "cactus": {
+        "path": "cactus/source/cactus1.obj"
       }
     }
   },
   "window": {
     "height": 720,
-    "title": "Hello, window!",
+    "title": "Shady desert barn...",
     "width": 1240
   }
 }
