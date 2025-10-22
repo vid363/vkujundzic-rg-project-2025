@@ -1,9 +1,11 @@
+#include "engine/graphics/Camera.hpp"
 #include "engine/graphics/GraphicsController.hpp"
 #include "engine/graphics/OpenGL.hpp"
 #include "engine/platform/PlatformController.hpp"
 #include "engine/platform/PlatformEventObserver.hpp"
 #include "engine/resources/ResourcesController.hpp"
 #include "spdlog/spdlog.h"
+#include <random>
 
 #include <GUIController.hpp>
 #include <MainController.hpp>
@@ -119,12 +121,12 @@ namespace app {
     }
 
 
-    engine::resources::Shader* MainController::create_model_shader(glm::mat4* model) {
+    engine::resources::Shader* MainController::create_and_set_shader(glm::mat4* model, const std::string &shader_name) {
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
         auto resources = get<engine::resources::ResourcesController>();
 
         // Only shader used for models, skybox has its own
-        engine::resources::Shader *shader = resources->shader("model_shader");
+        engine::resources::Shader *shader = resources->shader(shader_name);
 
         shader->use();
 
@@ -191,7 +193,7 @@ namespace app {
             shader->set_float("cameraLight.light.quadratic", quadriatic);
         }
 
-        shader->set_mat4("model", *model);
+        if (model != nullptr) { shader->set_mat4("model", *model); }
 
         return shader;
     }
@@ -206,6 +208,7 @@ namespace app {
             draw_heli();
         }
         draw_barn();
+        draw_cactuses();
         draw_skybox();;
     }
 
@@ -221,7 +224,7 @@ namespace app {
         model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::scale(model, glm::vec3(0.15f));
 
-        engine::resources::Shader* shader = create_model_shader(&model);
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
 
         ak47->draw(shader);
     }
@@ -238,7 +241,7 @@ namespace app {
         model = glm::rotate(model, glm::radians(helicopter.roll), glm::vec3(0.0f, 0.0f, 1.0f ));
         model = glm::scale(model, glm::vec3(0.8f));
 
-        engine::resources::Shader* shader = create_model_shader(&model);
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
 
         heli->draw(shader);
     }
@@ -253,7 +256,7 @@ namespace app {
         // model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
         model = glm::scale(model, glm::vec3(5.0f));
 
-        engine::resources::Shader* shader = create_model_shader(&model);
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
 
         barn->draw(shader);
     }
@@ -274,7 +277,7 @@ namespace app {
         engine::resources::Shader* shader = resources->shader("light_source");
         shader->use();
 
-        // engine::resources::Shader* shader = create_model_shader(&model);
+        // engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader);
         shader->set_mat4("model", model);
         shader->set_mat4("projection", graphics->projection_matrix());
         shader->set_mat4("view", graphics->camera()->view_matrix());
@@ -303,7 +306,7 @@ namespace app {
         model = glm::rotate(model, glm::radians(jeep_info.rotation_z), glm::vec3(0.0f, 0.0f, 1.0f ));
         model = glm::scale(model, glm::vec3(0.7f));
 
-        engine::resources::Shader* shader = create_model_shader(&model);
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
 
         jeep->draw(shader);
     }
@@ -315,8 +318,30 @@ namespace app {
 
         engine::resources::Model *desert = resources->model("desert");
         glm::mat4 model = glm::mat4(1.0f);
-        engine::resources::Shader* shader = create_model_shader(&model);
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
         desert->draw(shader);
+    }
+
+    void MainController::draw_cactuses() {
+        auto resources = get<engine::resources::ResourcesController>();
+
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *cactus = resources->model("cactus");
+        std::vector<glm::mat4> models;
+        int n = 100;
+        for (int i = 0; i < n; i++) {
+            glm::mat4 model = glm::mat4(1.0f);
+            float x = -100.0f + i;
+            float z = -100.0f + i;
+            model = glm::translate(model, glm::vec3(x , 0.0f, z));
+            model = glm::rotate(model, glm::radians(i * 1.5f), glm::vec3(0.0f, 1.0f, 0.0f));
+            models.push_back(model);
+        }
+
+        engine::resources::Shader* shader = create_and_set_shader(nullptr, "instance");
+
+        cactus->instance_draw(shader, models);
     }
 
 

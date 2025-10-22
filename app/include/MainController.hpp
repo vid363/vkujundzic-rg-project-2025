@@ -54,44 +54,45 @@ namespace app {
 
         bool action_sequence = false;
 
-        struct Jeep {
-            glm::vec3 light1_direction = glm::vec3(1.0f, -0.09f, -0.51);
-            glm::vec3 light2_direction = glm::vec3(1.0f, -0.09f, -0.31);
-            glm::vec3 light1_pos = glm::vec3(0.71f, 0.87f, -5.43f);
-            glm::vec3 light2_pos = glm::vec3(0.98f, 0.87f, -4.65f);
-            float rotation_z = 110.0f;
-            glm::vec3 pos = glm::vec3(-2.0f, 0.6f, -4.0f);
+        class Jeep {
+            public:
+                glm::vec3 light1_direction = glm::vec3(1.0f, -0.09f, -0.51);
+                glm::vec3 light2_direction = glm::vec3(1.0f, -0.09f, -0.31);
+                glm::vec3 light1_pos = glm::vec3(0.71f, 0.87f, -5.43f);
+                glm::vec3 light2_pos = glm::vec3(0.98f, 0.87f, -4.65f);
+                float rotation_z = 110.0f;
+                glm::vec3 pos = glm::vec3(-2.0f, 0.6f, -4.0f);
         };
 
         class Helicopter {
-        public:
-            glm::vec3 position = glm::vec3(0.0f, 20.0f, -100.0f);
-            glm::vec3 direction;
-            float pitch = 50.0f;
-            float yaw = 0.0f;
-            float roll = 0.0f;
-            float speed = 30.0f;
-            float rotation_speed = 18.0f;
-            float pitch_before_stabilizing = 30.0f;
-            float yaw_before_stabilizing = 0.0f;
-            float roll_before_stabilizing = 0.0f;
-            bool reached_landing_dest = false;
-            bool landing = false;
-            bool stabilizing = false;
-            int angle_sign = 1;
-            bool switched_stabilization_direction = false;
-            bool stabilized = false;
-            bool landed = false;
-            time_t time_landed = time(nullptr) + 99999;
+            public:
+                glm::vec3 position = glm::vec3(0.0f, 20.0f, -100.0f);
+                glm::vec3 direction;
+                float pitch = 50.0f;
+                float yaw = 0.0f;
+                float roll = 0.0f;
+                float speed = 30.0f;
+                float rotation_speed = 18.0f;
+                float pitch_before_stabilizing = 30.0f;
+                float yaw_before_stabilizing = 0.0f;
+                float roll_before_stabilizing = 0.0f;
+                bool reached_landing_dest = false;
+                bool landing = false;
+                bool stabilizing = false;
+                int angle_sign = 1;
+                bool switched_stabilization_direction = false;
+                bool stabilized = false;
+                bool landed = false;
+                time_t time_landed = time(nullptr) + 99999;
 
-            // Can be changed to just go into the direction but requires heli physics
-            void move(float const dt, glm::vec3 dest, bool forward = false, bool up = false, bool side = false);
+                // Can be changed to just go into the direction but requires heli physics
+                void move(float const dt, glm::vec3 dest, bool forward = false, bool up = false, bool side = false);
 
-            void rotate(float const dt, float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f);
+                void rotate(float const dt, float pitch = 0.0f, float yaw = 0.0f, float roll = 0.0f);
 
-            void stabilize(float dt);
+                void stabilize(float dt);
 
-            void reset();
+                void reset();
         };
 
         Helicopter helicopter;
@@ -102,7 +103,7 @@ namespace app {
 
         bool loop() override;
 
-        engine::resources::Shader* create_model_shader(glm::mat4* model);
+        engine::resources::Shader* create_and_set_shader(glm::mat4* model, const std::string &shader_name);
 
         void begin_draw() override;
 
@@ -119,6 +120,8 @@ namespace app {
         void draw_jeep();
 
         void draw_jeep_lights();
+
+        void draw_cactuses();
 
         void draw_skybox();
 
