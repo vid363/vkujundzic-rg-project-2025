@@ -57,7 +57,8 @@ jeep: https://sketchfab.com/3d-models/jeep-ab2a10f4e4434307837b5041c329f2a7
 ak47: https://sketchfab.com/3d-models/ak-47-c73d1429d16e4a02b48025046e20db50 \
 barn: https://drive.google.com/drive/folders/1InYFEYCjbYlsLo5hM3Jl3niNoAxp2YsE \
 heli: https://drive.google.com/drive/folders/1hLx9JieotZ4lOjfA8gwfB9glg_DonHkQ \
-desert_stone_ground: https://drive.google.com/drive/folders/1p6kKvJXg7tnAqNSvFgp_1qU5m9FVAHIX
+desert_stone_ground: https://drive.google.com/drive/folders/1p6kKvJXg7tnAqNSvFgp_1qU5m9FVAHIX \
+white_cube: https://sketchfab.com/3d-models/white-cube-09e936684d7a46f285727615eb072330
 
 ## Textures
 
