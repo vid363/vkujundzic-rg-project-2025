@@ -95,6 +95,8 @@ namespace app {
                 void reset();
         };
 
+        std::vector<glm::mat4> cactus_models;
+
         Helicopter helicopter;
         Jeep jeep_info;
 
@@ -120,6 +122,8 @@ namespace app {
         void draw_jeep();
 
         void draw_jeep_lights();
+
+        void create_instance_models(uint32_t n);
 
         void draw_cactuses();
 

@@ -105,6 +105,9 @@ namespace app {
         auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
         platform->register_platform_event_observer(std::make_unique<MainPlatformEventObserver>());
         engine::graphics::OpenGL::enable_depth_testing();
+
+        // Randomly create instance models for this run
+        create_instance_models(1000);
     }
 
     bool MainController::loop() {
@@ -322,26 +325,48 @@ namespace app {
         desert->draw(shader);
     }
 
+    void MainController::create_instance_models(uint32_t n) {
+        float min_coord = 15.0f;
+        float max_coord = 70.0f;
+        float step = 0.3;
+        int steps = ((max_coord - min_coord) / step);
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::bernoulli_distribution dist_positive_coord(0.5);
+        std::uniform_int_distribution<int> dist_coords(0, steps);
+        std::uniform_real_distribution<float> dist_rotation(-180.0f, 180.0f);
+        std::uniform_real_distribution<float> dist_scale(0.7f, 1.5f);
+        for (int i = 0; i < n; i++) {
+            glm::mat4 model = glm::mat4(1.0f);
+
+            float x = min_coord + dist_coords(gen) * step;
+            x = dist_positive_coord(gen) ? x : -x;
+
+            float z = min_coord + dist_coords(gen) * step;
+            z = dist_positive_coord(gen) ? z : -z;
+
+            model = glm::translate(model, glm::vec3(x, 0.0f, z));
+
+            model = glm::rotate(model, glm::radians(dist_rotation(gen)), glm::vec3(0.0f, 1.0f, 0.0f));
+
+            model = glm::scale(model, glm::vec3(dist_scale(gen)));
+
+            this->cactus_models.push_back(model);
+        }
+    }
+
+
     void MainController::draw_cactuses() {
         auto resources = get<engine::resources::ResourcesController>();
 
         auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
 
         engine::resources::Model *cactus = resources->model("cactus");
-        std::vector<glm::mat4> models;
-        int n = 100;
-        for (int i = 0; i < n; i++) {
-            glm::mat4 model = glm::mat4(1.0f);
-            float x = -100.0f + i;
-            float z = -100.0f + i;
-            model = glm::translate(model, glm::vec3(x , 0.0f, z));
-            model = glm::rotate(model, glm::radians(i * 1.5f), glm::vec3(0.0f, 1.0f, 0.0f));
-            models.push_back(model);
-        }
 
         engine::resources::Shader* shader = create_and_set_shader(nullptr, "instance");
 
-        cactus->instance_draw(shader, models);
+        cactus->instance_draw(shader, this->cactus_models);
     }
 
 
