@@ -1,8 +1,8 @@
-# vkujundzic-rg-project-2025
+# Shady desert barn...
 
 95/2022- Vid Kujundzic  
 Simple scene in a desert with a barn, jeep with turnt lights and
-ak47 resting on the barn.
+ak47 resting on the barn, which is being surrounded by cactuses.
 By pressing the key O, a helicopter will appear, land near the barn then
 take off.
 
@@ -32,12 +32,12 @@ O -> Activate helicopter sequence
 
 [ X ] Model with lighting
 [ X ] Two types of lighting with customizable colors and movement through GUI or ACTIONS
-[ X ] {HELICOPTER ARRIVING} --- AFTER 0 SECONDS --- Triggers ---> {HELICOPTER LANDING} ---> AFTER 10 SECONDS---Triggers---> { HELICOPTER TAKING OFF } -> AFTER HELICOPTER FAR FROM BARN -> {SCENE RESET}
+[ X ] {Press M} --- AFTER 0 SECONDS --- Triggers ---> {HELICOPTER ARRIVING AND LANDING} ---> AFTER 10 SECONDS---Triggers---> { HELICOPTER TAKING OFF } -> AFTER HELICOPTER FAR FROM BARN -> {SCENE RESET}
 
 ### Group A:
 
 [ ] Frame-buffers with post-processing   
-[ ] Instancing  
+[ X ] Instancing  
 [ ] Off-screen Anti-Aliasing  
 [ ] Parallax Mapping
 
@@ -58,7 +58,8 @@ ak47: https://sketchfab.com/3d-models/ak-47-c73d1429d16e4a02b48025046e20db50 \
 barn: https://drive.google.com/drive/folders/1InYFEYCjbYlsLo5hM3Jl3niNoAxp2YsE \
 heli: https://drive.google.com/drive/folders/1hLx9JieotZ4lOjfA8gwfB9glg_DonHkQ \
 desert_stone_ground: https://drive.google.com/drive/folders/1p6kKvJXg7tnAqNSvFgp_1qU5m9FVAHIX \
-white_cube: https://sketchfab.com/3d-models/white-cube-09e936684d7a46f285727615eb072330
+white_cube: https://sketchfab.com/3d-models/white-cube-09e936684d7a46f285727615eb072330 \
+cactus: https://drive.google.com/drive/folders/1juZas7ripa22fZ28RApHckxMcuBxSh5S
 
 ## Textures
 
