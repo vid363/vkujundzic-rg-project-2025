@@ -56,7 +56,7 @@ namespace app {
 
         class Jeep {
             public:
-                glm::vec3 light1_direction = glm::vec3(1.0f, -0.09f, -0.51);
+                glm::vec3 light1_direction = glm::vec3(1.0f, -0.09f, -0.31);
                 glm::vec3 light2_direction = glm::vec3(1.0f, -0.09f, -0.31);
                 glm::vec3 light1_pos = glm::vec3(0.71f, 0.87f, -5.43f);
                 glm::vec3 light2_pos = glm::vec3(0.98f, 0.87f, -4.65f);
