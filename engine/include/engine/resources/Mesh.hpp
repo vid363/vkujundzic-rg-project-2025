@@ -33,6 +33,10 @@ class Mesh {
 
 public:
 
+    uint32_t get_m_vao() const { return m_vao; }
+
+    void instance_draw(const Shader *shader, int n_instance);
+
     /**
     * @brief Draws the mesh using a given shader. Called by the @ref Model::draw function to draw all the meshes in the model.
     * @param shader The shader to use for drawing.

@@ -44,6 +44,25 @@ Mesh::Mesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &ind
     m_textures = std::move(textures);
 }
 
+void Mesh::instance_draw(const Shader *shader, const int n_instance) {
+    std::unordered_map<std::string_view, uint32_t> counts;
+    std::string uniform_name;
+    uniform_name.reserve(32);
+    for (int i = 0; i < m_textures.size(); i++) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        const auto &texture_type = Texture::uniform_name_convention(m_textures[i]->type());
+        uniform_name.append(texture_type);
+        const auto count = (counts[texture_type] += 1);
+        uniform_name.append(std::to_string(count));
+        shader->set_int(uniform_name, i);
+        glBindTexture(GL_TEXTURE_2D, m_textures[i]->id());
+        uniform_name.clear();
+    }
+    glBindVertexArray(m_vao);
+    glDrawElementsInstanced(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_INT, nullptr, n_instance);
+    glBindVertexArray(0);
+}
+
 void Mesh::draw(const Shader *shader) {
     std::unordered_map<std::string_view, uint32_t> counts;
     std::string uniform_name;
