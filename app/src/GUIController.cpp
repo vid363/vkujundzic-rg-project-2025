@@ -30,14 +30,7 @@ namespace app {
                 ImGui::Text("(Yaw, Pitch): (%f, %f)", c.Yaw, c.Pitch);
                 ImGui::Text("Camera front: (%f, %f, %f)", c.Front.x, c.Front.y, c.Front.z);
 
-                ImGui::EndTabItem();
-            }
-
-            if (ImGui::BeginTabItem("Light")) {
-                ImGui::DragFloat3("Directional light ambient color", &mainController->dir_light_ambient.x, 0.01, 0.0, 100.0);
-                ImGui::DragFloat3("Directional light diffuse color", &mainController->dir_light_diffuse.x, 0.01, 0.0, 100.0);
-                ImGui::DragFloat3("Directional light specular color", &mainController->dir_light_specular.x, 0.01, 0.0, 100.0);
-                ImGui::DragFloat("Directional light intensity", &mainController->dir_light_intensity, 0.01, 0.0, 1.0);
+                ImGui::Checkbox("Can camera go underground", &mainController->can_camera_go_below_ground);
 
                 ImGui::DragFloat3("Camera spotlight ambient color", &mainController->camera_spotlight_ambient.x, 0.01, 0.0, 100.0);
                 ImGui::DragFloat3("Camera spotlight diffuse color", &mainController->camera_spotlight_diffuse.x, 0.01, 0.0, 100.0);
@@ -47,29 +40,25 @@ namespace app {
                 ImGui::EndTabItem();
             }
 
-            if (ImGui::BeginTabItem("Jeep Light")) {
-                ImGui::DragFloat3("Spotlight1 direction", &mainController->jeep_info.light1_direction.x, 0.01, -1.0, 1.0);
-                ImGui::DragFloat3("Spotlight1 pos", &mainController->jeep_info.light1_pos.x, 0.01, -100.0, 100.0);
-
-                ImGui::DragFloat3("Spotlight2 direction", &mainController->jeep_info.light2_direction.x, 0.01, -1.0, 1.0);
-                ImGui::DragFloat3("Spotlight2 pos", &mainController->jeep_info.light2_pos.x, 0.01, -100.0, 100.0);
+            if (ImGui::BeginTabItem("Directional light")) {
+                ImGui::DragFloat3("Directional light ambient color", &mainController->dir_light_ambient.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Directional light diffuse color", &mainController->dir_light_diffuse.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat3("Directional light specular color", &mainController->dir_light_specular.x, 0.01, 0.0, 100.0);
+                ImGui::DragFloat("Directional light intensity", &mainController->dir_light_intensity, 0.01, 0.0, 1.0);
 
                 ImGui::EndTabItem();
             }
 
             if (ImGui::BeginTabItem("Helicopter")) {
-                ImGui::Text("Heli position: (%f, %f, %f)", mainController->helicopter.position.x, mainController->helicopter.position.y, mainController->helicopter.position.z);
-                ImGui::Text("Heli direction: (%f, %f, %f))", mainController->helicopter.direction.x, mainController->helicopter.direction.y, mainController->helicopter.direction.z);
-                ImGui::Text("Heli pitch: %f", mainController->helicopter.pitch);
-                ImGui::Text("Heli yawn: %f", mainController->helicopter.yaw);
-                ImGui::Text("Heli roll: %f", mainController->helicopter.roll);
-
-                ImGui::EndTabItem();
-            }
-
-            if (ImGui::BeginTabItem("Camera movement")) {
-                ImGui::Checkbox("Can camera go underground", &mainController->can_camera_go_below_ground);
-
+                if (mainController->action_sequence) {
+                    ImGui::Text("Heli position: (%f, %f, %f)", mainController->helicopter.position.x, mainController->helicopter.position.y, mainController->helicopter.position.z);
+                    ImGui::Text("Heli direction: (%f, %f, %f))", mainController->helicopter.direction.x, mainController->helicopter.direction.y, mainController->helicopter.direction.z);
+                    ImGui::Text("Heli pitch: %f", mainController->helicopter.pitch);
+                    ImGui::Text("Heli yawn: %f", mainController->helicopter.yaw);
+                    ImGui::Text("Heli roll: %f", mainController->helicopter.roll);
+                } else {
+                    ImGui::Text("No helicopter in sight");
+                }
                 ImGui::EndTabItem();
             }
 
