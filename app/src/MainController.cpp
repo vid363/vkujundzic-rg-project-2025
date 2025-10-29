@@ -179,10 +179,10 @@ namespace app {
         shader->set_float("spotLight[1].linear", linear);
         shader->set_float("spotLight[1].quadratic", quadriatic);
 
-        shader->set_bool("cameraLight.enabled", isCameraTorchOn);
+        shader->set_bool("cameraLight.enabled", is_camera_torch_on);
 
-        if (firstRun || isCameraTorchOn) {
-            firstRun = false;
+        if (is_first_run || is_camera_torch_on) {
+            is_first_run = false;
 
             auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
             shader->set_vec3("cameraLight.light.direction", camera->Front);
@@ -477,7 +477,7 @@ namespace app {
 
         if (platform->key(engine::platform::KEY_LEFT_SHIFT).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::DOWN, movement_speed); }
 
-        if (platform->key(engine::platform::KeyId::KEY_L).state() == engine::platform::Key::State::JustPressed) { isCameraTorchOn = !isCameraTorchOn; }
+        if (platform->key(engine::platform::KeyId::KEY_L).state() == engine::platform::Key::State::JustPressed) { is_camera_torch_on = !is_camera_torch_on; }
 
         if (platform->key(engine::platform::KeyId::KEY_O).state() == engine::platform::Key::State::JustPressed) {
             action_sequence = true;

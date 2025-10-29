@@ -7,7 +7,6 @@
 #include <engine/core/Controller.hpp>
 #include <engine/resources/Shader.hpp>
 #include <glm/glm.hpp>
-#include <iostream>
 #include <spdlog/spdlog.h>
 
 namespace app {
@@ -43,8 +42,8 @@ namespace app {
 
 
         // Should camera spotlight be on
-        bool isCameraTorchOn = false;
-        bool firstRun = true;
+        bool is_camera_torch_on = false;
+        bool is_first_run = true;
 
         // Material values
         int material_diffuse = 0;
