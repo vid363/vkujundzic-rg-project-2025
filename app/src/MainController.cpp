@@ -1,0 +1,496 @@
+#include "engine/graphics/Camera.hpp"
+#include "engine/graphics/GraphicsController.hpp"
+#include "engine/graphics/OpenGL.hpp"
+#include "engine/platform/PlatformController.hpp"
+#include "engine/platform/PlatformEventObserver.hpp"
+#include "engine/resources/ResourcesController.hpp"
+#include "spdlog/spdlog.h"
+#include <random>
+
+#include <GUIController.hpp>
+#include <MainController.hpp>
+
+namespace app {
+
+    class MainPlatformEventObserver : public engine::platform::PlatformEventObserver {
+        public:
+            void on_mouse_move(engine::platform::MousePosition position) override;
+            void on_scroll(engine::platform::MousePosition position) override;
+    };
+
+    void MainPlatformEventObserver::on_mouse_move(engine::platform::MousePosition position) {
+        auto gui = engine::core::Controller::get<GUIController>();
+        if (gui->is_enabled()) return;
+
+        auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+
+        auto sensitivity = engine::core::Controller::get<MainController>()->mouse_sensitivity;
+        camera->rotate_camera(position.dx * sensitivity, position.dy * sensitivity);
+    }
+
+    void MainPlatformEventObserver::on_scroll(engine::platform::MousePosition position) {
+        auto gui = engine::core::Controller::get<GUIController>();
+        if (gui->is_enabled()) return;
+
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+        auto camera = graphics->camera();
+        camera->zoom(position.dy);
+        graphics->perspective_params().FOV = glm::radians(camera->Zoom);
+
+    }
+
+    void MainController::Helicopter::move(float const dt, glm::vec3 dest, bool forward, bool up, bool side) {
+        direction.z = forward ? glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch)) : 0.0f;
+        direction.y = up ? glm::sin(glm::radians(pitch)) : 0.0f;
+        direction.x = side ? glm::sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch)) : 0.0f;
+
+        // Slow down if intended dest is ground and heli is close
+        if (dest.y <= 0.5f && glm::abs(glm::length(position - dest)) < 35.0f && !landed) {
+            speed *= 1.0f - 0.6f * dt;
+        }
+
+        position += dt * speed * direction;
+    }
+
+    void MainController::Helicopter::rotate(float const dt, float pitch, float yaw, float roll) {
+        this->pitch += pitch * dt * rotation_speed;
+        this->yaw += yaw * dt * rotation_speed;
+        this->roll += roll * dt * rotation_speed;
+
+        this->pitch = glm::clamp(this->pitch, -180.0f, 180.0f);
+        this->yaw = glm::clamp(this->yaw, -180.0f, 180.0f);
+        this->roll = glm::clamp(this->roll, -180.0f, 180.0f);
+    }
+
+
+
+    void MainController::Helicopter::stabilize(float dt) {
+        if (pitch < pitch_before_stabilizing && !switched_stabilization_direction) {
+            spdlog::info("Switched stabilization direction");
+            angle_sign *= -angle_sign;
+            switched_stabilization_direction = true;
+        }
+
+        if (glm::abs(pitch - pitch_before_stabilizing) < 40.0f) {
+            rotation_speed *= (1.0f - angle_sign * 0.7f * dt);
+        }
+
+        rotate(dt, -angle_sign * 2.0f);
+
+        if (switched_stabilization_direction
+            && pitch * angle_sign <= 0.0f) {
+            spdlog::info("Chopper is stable");
+            pitch = 0.0f;
+            stabilized = true;
+        }
+    }
+
+    void MainController::Helicopter::reset() {
+        position = glm::vec3(0.0f, 20.0f, -100.0f);
+        pitch = 50.0f;
+        yaw = 0.0f;
+        roll = 0.0f;
+        speed = 30.0f;
+        rotation_speed = 21.0f;
+        pitch_before_stabilizing = -25.0f;
+        yaw_before_stabilizing = 0.0f;
+        roll_before_stabilizing = 0.0f;
+        reached_landing_dest = false;
+        landing = false;
+        stabilizing = false;
+        angle_sign = 1;
+        switched_stabilization_direction = false;
+        stabilized = false;
+        landed = false;
+    }
+
+    void MainController::initialize() {
+        spdlog::info("Initializing MainController...");
+        auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+        platform->register_platform_event_observer(std::make_unique<MainPlatformEventObserver>());
+        engine::graphics::OpenGL::enable_depth_testing();
+
+        // Randomly create instance models for this run
+        create_instance_models(1000);
+    }
+
+    bool MainController::loop() {
+        auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+        if (platform->key(engine::platform::KEY_ESCAPE).is_down()) {
+            spdlog::info("Exiting...");
+            return false;
+        }
+        return true;
+    }
+
+    void MainController::begin_draw() {
+        engine::graphics::OpenGL::clear_buffers();
+    }
+
+
+    engine::resources::Shader* MainController::create_and_set_shader(glm::mat4* model, const std::string &shader_name) {
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+        auto resources = get<engine::resources::ResourcesController>();
+
+        // Only shader used for models, skybox has its own
+        engine::resources::Shader *shader = resources->shader(shader_name);
+
+        shader->use();
+
+        shader->set_mat4("projection", graphics->projection_matrix());
+        shader->set_mat4("view", graphics->camera()->view_matrix());
+
+        shader->set_int("material.diffuse", material_diffuse);
+        shader->set_int("material.specular", material_specular);
+        shader->set_float("material.shininess", material_shininess);
+
+        shader->set_vec3("dirLight.direction", dir_light_dir);
+        shader->set_vec3("dirLight.ambient", dir_light_ambient);
+        shader->set_vec3("dirLight.diffuse", dir_light_diffuse);
+        shader->set_vec3("dirLight.specular", dir_light_specular);
+        shader->set_float("dirLight.intensity", dir_light_intensity);
+
+
+        shader->set_vec3("spotLight[0].direction", jeep_info.light_direction);
+        shader->set_vec3("spotLight[0].position", jeep_info.light1_pos);
+        shader->set_float("spotLight[0].cutOff", glm::cos(glm::radians(12.5f)));
+        shader->set_float("spotLight[0].outerCutOff", glm::cos(glm::radians(17.5f)));
+        shader->set_float("spotLight[0].intensity", spotlight_intensity);
+
+        shader->set_vec3("spotLight[0].ambient", spotlight_ambient);
+        shader->set_vec3("spotLight[0].diffuse", spotlight_diffuse);
+        shader->set_vec3("spotLight[0].specular", spotlight_specular);
+
+        shader->set_float("spotLight[0].constant", constant);
+        shader->set_float("spotLight[0].linear", linear);
+        shader->set_float("spotLight[0].quadratic", quadriatic);
+
+        shader->set_vec3("spotLight[1].direction", jeep_info.light_direction);
+        shader->set_vec3("spotLight[1].position", jeep_info.light2_pos);
+        shader->set_float("spotLight[1].cutOff", glm::cos(glm::radians(12.5f)));
+        shader->set_float("spotLight[1].outerCutOff", glm::cos(glm::radians(17.5f)));
+        shader->set_float("spotLight[1].intensity", spotlight_intensity);
+
+        shader->set_vec3("spotLight[1].ambient", spotlight_ambient);
+        shader->set_vec3("spotLight[1].diffuse", spotlight_diffuse);
+        shader->set_vec3("spotLight[1].specular", spotlight_specular);
+
+        shader->set_float("spotLight[1].constant", constant);
+        shader->set_float("spotLight[1].linear", linear);
+        shader->set_float("spotLight[1].quadratic", quadriatic);
+
+        shader->set_bool("cameraLight.enabled", is_camera_torch_on);
+
+        if (is_first_run || is_camera_torch_on) {
+            is_first_run = false;
+
+            auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
+            shader->set_vec3("cameraLight.light.direction", camera->Front);
+            shader->set_vec3("cameraLight.light.position", camera->Position);
+            shader->set_float("cameraLight.light.cutOff", glm::cos(glm::radians(12.5f)));
+            shader->set_float("cameraLight.light.outerCutOff", glm::cos(glm::radians(17.5f)));
+            shader->set_float("cameraLight.light.intensity", camera_spotlight_intensity + 0.5f);
+
+            shader->set_vec3("cameraLight.light.ambient", camera_spotlight_ambient);
+            shader->set_vec3("cameraLight.light.diffuse", camera_spotlight_diffuse);
+            shader->set_vec3("cameraLight.light.specular", camera_spotlight_specular);
+
+            shader->set_float("cameraLight.light.constant", constant);
+            shader->set_float("cameraLight.light.linear", linear);
+            shader->set_float("cameraLight.light.quadratic", quadriatic);
+        }
+
+        if (model != nullptr) { shader->set_mat4("model", *model); }
+
+        return shader;
+    }
+
+    void MainController::draw() {
+        draw_jeep();
+        draw_jeep_lights();
+        draw_desert();
+        draw_ak47();
+        if (action_sequence) {
+            update_sequence();
+            draw_heli();
+        }
+        draw_barn();
+        draw_cactuses();
+        draw_skybox();;
+    }
+
+    void MainController::draw_ak47() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *ak47 = resources->model("ak47");
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(4.63f, 0.48f, -6.0f));
+        model = glm::rotate(model, glm::radians(240.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(60.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::scale(model, glm::vec3(0.15f));
+
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
+
+        ak47->draw(shader);
+    }
+    void MainController::create_instance_models(uint32_t n) {
+        float radius = 60.0;
+        float offset = 25.0f;
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dist_offset(-offset, offset);
+        std::uniform_real_distribution<float> dist_rotation(-180.0f, 180.0f);
+        std::uniform_real_distribution<float> dist_scale(0.7f, 1.5f);
+
+        for (int i = 0; i < n; i++) {
+            glm::mat4 model = glm::mat4(1.0f);
+
+            float angle = (float) i / (float) n * 360.0f;
+            float x = glm::sin(glm::radians(angle)) * radius + dist_offset(gen);
+            float z = glm::cos(glm::radians(angle)) * radius + dist_offset(gen);
+            model = glm::translate(model, glm::vec3(x, 0, z - 20.0f));
+
+            model = glm::rotate(model, glm::radians(dist_rotation(gen)), glm::vec3(0.0f, 1.0f, 0.0f));
+
+            model = glm::scale(model, glm::vec3(dist_scale(gen)));
+
+            this->cactus_models.push_back(model);
+        }
+    }
+
+    void MainController::draw_heli() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *heli = resources->model("heli");
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, helicopter.position);
+        model = glm::rotate(model, glm::radians(helicopter.pitch), glm::vec3(1.0f, 0.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(helicopter.yaw), glm::vec3(0.0f, 1.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(helicopter.roll), glm::vec3(0.0f, 0.0f, 1.0f ));
+        model = glm::scale(model, glm::vec3(0.8f));
+
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
+
+        heli->draw(shader);
+    }
+
+    void MainController::draw_barn() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *barn = resources->model("barn");
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(10.0f, 2.5f, -5.0f));
+        // model = glm::rotate(model, glm::radians(30.0f), glm::vec3(0.0f, 1.0f, 0.0f ));
+        model = glm::scale(model, glm::vec3(5.0f));
+
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
+
+        barn->draw(shader);
+    }
+
+    void MainController::draw_jeep_lights() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *light = resources->model("white_cube");
+
+        glm::vec3 scaleMatrix = glm::vec3(0.08f, 0.06f, 0.08f);
+
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, jeep_info.light1_pos);
+        model = glm::rotate(model, glm::radians(jeep_info.rotation_z), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, scaleMatrix);
+
+        engine::resources::Shader* shader = resources->shader("light_source");
+        shader->use();
+
+        // engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader);
+        shader->set_mat4("model", model);
+        shader->set_mat4("projection", graphics->projection_matrix());
+        shader->set_mat4("view", graphics->camera()->view_matrix());
+
+        light->draw(shader);
+
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, jeep_info.light2_pos);
+        model = glm::rotate(model, glm::radians(jeep_info.rotation_z), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, scaleMatrix);
+        shader->set_mat4("model", model);
+
+        light->draw(shader);
+    }
+
+    void MainController::draw_jeep() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *jeep = resources->model("jeep");
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, jeep_info.pos);
+        // Base rotation, it is positioned vertically without it
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f ));
+        model = glm::rotate(model, glm::radians(jeep_info.rotation_z), glm::vec3(0.0f, 0.0f, 1.0f ));
+        model = glm::scale(model, glm::vec3(0.7f));
+
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
+
+        jeep->draw(shader);
+    }
+
+
+    void MainController::draw_desert() {
+        auto resources = get<engine::resources::ResourcesController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *desert = resources->model("desert");
+        glm::mat4 model = glm::mat4(1.0f);
+        engine::resources::Shader* shader = create_and_set_shader(&model, "model_shader");
+        desert->draw(shader);
+    }
+
+
+    void MainController::draw_cactuses() {
+        auto resources = get<engine::resources::ResourcesController>();
+
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        engine::resources::Model *cactus = resources->model("cactus");
+
+        engine::resources::Shader* shader = create_and_set_shader(nullptr, "instance");
+
+        cactus->instance_draw(shader, this->cactus_models);
+    }
+
+
+    void MainController::draw_skybox() {
+        auto resources = engine::core::Controller::get<engine::resources::ResourcesController>();
+
+        // No need to use create_shader func for skybox
+        auto skybox = resources->skybox("night_skybox");
+        auto shader = resources->shader("skybox");
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+
+        graphics->draw_skybox(shader, skybox);
+    }
+
+    void MainController::end_draw() {
+        auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+        platform->swap_buffers();
+    }
+
+    // Currently only goes along z axis
+    void MainController::update_sequence() {
+        if (!action_sequence)
+            return;
+
+        auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+        float dt = platform->dt();
+
+        // Move to some coordinate depending on the angle, right now it is hardcoded
+        if (!helicopter.reached_landing_dest) {
+            //Only z axis is needed in this example
+            helicopter.move(dt, glm::vec3(0.0f, 0.0f, -25.0f),true, false, false);
+
+            // Destination reached
+            if (helicopter.position.z > -25.0f){
+                helicopter.reached_landing_dest = true;
+                // helicopter.pitch_before_stabilizing = -helicopter.pitch;
+                spdlog::info("Reached stabilizing");
+            }
+        }
+
+        //Reached close to coordinates, start stabilizing
+        if (!helicopter.stabilized && glm::abs(helicopter.position.z - (-25.0f)) < 50.0f) {
+            helicopter.stabilize(dt);
+        }
+        // Stabilized, now descend
+        else if (!helicopter.landed && helicopter.stabilized) {
+            helicopter.position.y -= dt * helicopter.speed;
+
+            helicopter.speed *= 1.0f - 0.5f * dt;
+
+            if (helicopter.position.y <= -1.0f && helicopter.pitch > -2.0f) {
+                helicopter.rotate(dt, -1.0f);
+            }
+
+            if (helicopter.position.y <= -1.46f) {
+                helicopter.landed = true;
+                spdlog::info("Chopper landed");
+                helicopter.time_landed = time(nullptr);
+            }
+        }
+        // Waiting for 10 seconds to pass then start ascending
+        else if (difftime(time(nullptr), helicopter.time_landed) > 3 && helicopter.landed) {
+            spdlog::info("Chopper ascending");
+            if (helicopter.position.y > 5.0f) {
+                helicopter.move(dt, glm::vec3(0.0f, 100.0f, 100.0f), true, true, false);
+                // Point the nose down if not enough
+                if (helicopter.pitch < 50.0f) {
+                    helicopter.rotate(dt, -helicopter.angle_sign * 2);
+                }
+            } else {
+                if (helicopter.pitch < 0.0f) {
+                    helicopter.rotate(dt, 1.0f);
+                }
+                helicopter.position.y += dt * helicopter.speed;
+            }
+
+            helicopter.speed = glm::abs(helicopter.position.z - (-25.0f)) > 15.0f ?
+                helicopter.speed : helicopter.speed * (1.0f + 0.7f * dt);
+
+            // End sequence
+            if (helicopter.position.z > 50.0f) {
+                helicopter.reset();
+                action_sequence = false;
+            }
+        }
+    }
+
+    void MainController::update() { update_camera(); }
+
+    void MainController::update_camera() {
+        auto gui = engine::core::Controller::get<GUIController>();
+        if (gui->is_enabled()) return;
+
+        auto platform = engine::core::Controller::get<engine::platform::PlatformController>();
+        auto graphics = engine::core::Controller::get<engine::graphics::GraphicsController>();
+        auto camera = graphics->camera();
+
+        float dt = platform->dt();
+        float movement_speed = dt * this->movement_speed;
+
+        if (platform->key(engine::platform::KEY_W).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::FORWARD, movement_speed); }
+
+        if (platform->key(engine::platform::KEY_S).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::BACKWARD, movement_speed); }
+
+        if (platform->key(engine::platform::KEY_A).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::LEFT, movement_speed); }
+
+        if (platform->key(engine::platform::KEY_D).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::RIGHT, movement_speed); }
+
+        if (platform->key(engine::platform::KEY_SPACE).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::UP, movement_speed); }
+
+        if (platform->key(engine::platform::KEY_LEFT_SHIFT).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::DOWN, movement_speed); }
+
+        if (platform->key(engine::platform::KeyId::KEY_L).state() == engine::platform::Key::State::JustPressed) { is_camera_torch_on = !is_camera_torch_on; }
+
+        if (platform->key(engine::platform::KeyId::KEY_O).state() == engine::platform::Key::State::JustPressed) {
+            action_sequence = true;
+        }
+
+        // Prevent camera from going below the ground
+        if (!can_camera_go_below_ground && camera->Position.y < 0.2) {
+            camera->Position.y = 0.2f;
+        }
+
+        auto mouse = platform->mouse();
+        camera->rotate_camera(mouse.dx, mouse.dy);
+        camera->zoom(mouse.scroll);
+    }
+
+}

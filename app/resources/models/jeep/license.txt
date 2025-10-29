@@ -1,0 +1,8 @@
+Model Information:
+* title:	Jeep
+* source:	https://sketchfab.com/3d-models/jeep-ab2a10f4e4434307837b5041c329f2a7
+* author:	Daniil Sievierinov (https://sketchfab.com/danokk)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

@@ -19,6 +19,9 @@ class Model {
     friend class ResourcesController;
 
 public:
+
+    void instance_draw(const Shader *shader, const std::vector<glm::mat4> &model_matrices);
+
     /**
     * @brief Draws the model using a given shader by drawing all the meshes in the model.
     * @param shader The shader to use for drawing.

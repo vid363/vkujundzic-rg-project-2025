@@ -1,11 +1,37 @@
 {
   "resources": {
     "models": {
+      "ak47": {
+        "path": "ak47/scene.gltf",
+        "flip_uvs": true
+      },
+      "heli": {
+        "path": "heli/ah64d.obj",
+        "flip_uvs": true
+      },
+      "barn": {
+        "path": "barn4/scene.gltf",
+        "flip_uvs": true
+      },
+      "desert": {
+        "path": "desert_stone_ground/scene.gltf",
+        "flip_uvs": true
+      },
+      "jeep": {
+        "path": "jeep/scene.gltf",
+        "flip_uvs": true
+      },
+      "white_cube": {
+        "path": "white_cube/scene.gltf"
+      },
+      "cactus": {
+        "path": "cactus/source/cactus1.obj"
+      }
     }
   },
   "window": {
-    "height": 600,
-    "title": "Hello, window!",
-    "width": 800
+    "height": 720,
+    "title": "Shady desert barn...",
+    "width": 1240
   }
 }
