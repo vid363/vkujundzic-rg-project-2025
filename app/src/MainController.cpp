@@ -23,8 +23,8 @@ namespace app {
         if (gui->is_enabled()) return;
 
         auto camera = engine::core::Controller::get<engine::graphics::GraphicsController>()->camera();
-        // Temporary solution
-        auto sensitivity = 5.0f;
+
+        auto sensitivity = engine::core::Controller::get<MainController>()->mouse_sensitivity;
         camera->rotate_camera(position.dx * sensitivity, position.dy * sensitivity);
     }
 
@@ -40,13 +40,14 @@ namespace app {
     }
 
     void MainController::Helicopter::move(float const dt, glm::vec3 dest, bool forward, bool up, bool side) {
-        direction.z = forward ? cos(glm::radians(yaw)) * cos(glm::radians(pitch)) : 0.0f;
-        direction.y = up ? sin(glm::radians(pitch)) : 0.0f;
-        direction.x = side ? sin(glm::radians(yaw)) * cos(glm::radians(pitch)) : 0.0f;
+        direction.z = forward ? glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch)) : 0.0f;
+        direction.y = up ? glm::sin(glm::radians(pitch)) : 0.0f;
+        direction.x = side ? glm::sin(glm::radians(yaw)) * glm::cos(glm::radians(pitch)) : 0.0f;
 
         // Slow down if intended dest is ground and heli is close
-        std::cout << glm::abs(glm::length(position - dest)) << std::endl;
-        if (dest.y <= 0.0f && glm::abs(glm::length(position - dest)) < 28.0f) speed -= 14 * dt;
+        if (dest.y <= 0.5f && glm::abs(glm::length(position - dest)) < 35.0f && !landed) {
+            speed *= 1.0f - 0.6f * dt;
+        }
 
         position += dt * speed * direction;
     }
@@ -64,14 +65,17 @@ namespace app {
 
 
     void MainController::Helicopter::stabilize(float dt) {
-        if (pitch < pitch_before_stabilizing && !switched_stabilization_direction
-            && reached_landing_dest) {
+        if (pitch < pitch_before_stabilizing && !switched_stabilization_direction) {
             spdlog::info("Switched stabilization direction");
-            angle_sign *= -1;
+            angle_sign *= -angle_sign;
             switched_stabilization_direction = true;
         }
 
-        rotate(dt, -angle_sign * 2);
+        if (glm::abs(pitch - pitch_before_stabilizing) < 40.0f) {
+            rotation_speed *= (1.0f - angle_sign * 0.7f * dt);
+        }
+
+        rotate(dt, -angle_sign * 2.0f);
 
         if (switched_stabilization_direction
             && pitch * angle_sign <= 0.0f) {
@@ -82,13 +86,13 @@ namespace app {
     }
 
     void MainController::Helicopter::reset() {
-
         position = glm::vec3(0.0f, 20.0f, -100.0f);
         pitch = 50.0f;
         yaw = 0.0f;
         roll = 0.0f;
         speed = 30.0f;
-        pitch_before_stabilizing = 30.0f;
+        rotation_speed = 21.0f;
+        pitch_before_stabilizing = -25.0f;
         yaw_before_stabilizing = 0.0f;
         roll_before_stabilizing = 0.0f;
         reached_landing_dest = false;
@@ -147,7 +151,7 @@ namespace app {
         shader->set_float("dirLight.intensity", dir_light_intensity);
 
 
-        shader->set_vec3("spotLight[0].direction", jeep_info.light1_direction);
+        shader->set_vec3("spotLight[0].direction", jeep_info.light_direction);
         shader->set_vec3("spotLight[0].position", jeep_info.light1_pos);
         shader->set_float("spotLight[0].cutOff", glm::cos(glm::radians(12.5f)));
         shader->set_float("spotLight[0].outerCutOff", glm::cos(glm::radians(17.5f)));
@@ -161,7 +165,7 @@ namespace app {
         shader->set_float("spotLight[0].linear", linear);
         shader->set_float("spotLight[0].quadratic", quadriatic);
 
-        shader->set_vec3("spotLight[1].direction", jeep_info.light2_direction);
+        shader->set_vec3("spotLight[1].direction", jeep_info.light_direction);
         shader->set_vec3("spotLight[1].position", jeep_info.light2_pos);
         shader->set_float("spotLight[1].cutOff", glm::cos(glm::radians(12.5f)));
         shader->set_float("spotLight[1].outerCutOff", glm::cos(glm::radians(17.5f)));
@@ -329,7 +333,7 @@ namespace app {
         engine::resources::Model *jeep = resources->model("jeep");
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, jeep_info.pos);
-        // Base rotation, for some reason it renders vertically without it
+        // Base rotation, it is positioned vertically without it
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f ));
         model = glm::rotate(model, glm::radians(jeep_info.rotation_z), glm::vec3(0.0f, 0.0f, 1.0f ));
         model = glm::scale(model, glm::vec3(0.7f));
@@ -396,18 +400,25 @@ namespace app {
             // Destination reached
             if (helicopter.position.z > -25.0f){
                 helicopter.reached_landing_dest = true;
-                helicopter.pitch_before_stabilizing = -helicopter.pitch / 3.0f;
-
+                // helicopter.pitch_before_stabilizing = -helicopter.pitch;
                 spdlog::info("Reached stabilizing");
             }
         }
+
         //Reached close to coordinates, start stabilizing
-        if (!helicopter.stabilized && glm::abs(helicopter.position.z - (-20.0f)) < 8.0f) {
+        if (!helicopter.stabilized && glm::abs(helicopter.position.z - (-25.0f)) < 50.0f) {
             helicopter.stabilize(dt);
         }
         // Stabilized, now descend
         else if (!helicopter.landed && helicopter.stabilized) {
             helicopter.position.y -= dt * helicopter.speed;
+
+            helicopter.speed *= 1.0f - 0.5f * dt;
+
+            if (helicopter.position.y <= -1.0f && helicopter.pitch > -2.0f) {
+                helicopter.rotate(dt, -1.0f);
+            }
+
             if (helicopter.position.y <= -1.46f) {
                 helicopter.landed = true;
                 spdlog::info("Chopper landed");
@@ -415,19 +426,26 @@ namespace app {
             }
         }
         // Waiting for 10 seconds to pass then start ascending
-        else if (difftime(time(nullptr), helicopter.time_landed) > 10 && helicopter.landed) {
+        else if (difftime(time(nullptr), helicopter.time_landed) > 3 && helicopter.landed) {
             spdlog::info("Chopper ascending");
-            helicopter.move(dt, glm::vec3(0.0f, 100.0f, 100.0f), true, true, false);
+            if (helicopter.position.y > 5.0f) {
+                helicopter.move(dt, glm::vec3(0.0f, 100.0f, 100.0f), true, true, false);
+                // Point the nose down if not enough
+                if (helicopter.pitch < 50.0f) {
+                    helicopter.rotate(dt, -helicopter.angle_sign * 2);
+                }
+            } else {
+                if (helicopter.pitch < 0.0f) {
+                    helicopter.rotate(dt, 1.0f);
+                }
+                helicopter.position.y += dt * helicopter.speed;
+            }
 
-            helicopter.speed = glm::abs(helicopter.position.z - (-20.0f)) > 15.0f ?
-                helicopter.speed : helicopter.speed + 17 * dt;
-
-            // Point the nose down if not enough
-            if (helicopter.pitch < 50.0f)
-                helicopter.rotate(dt, -helicopter.angle_sign * 2);
+            helicopter.speed = glm::abs(helicopter.position.z - (-25.0f)) > 15.0f ?
+                helicopter.speed : helicopter.speed * (1.0f + 0.7f * dt);
 
             // End sequence
-            if (helicopter.position.z > 100.0f) {
+            if (helicopter.position.z > 50.0f) {
                 helicopter.reset();
                 action_sequence = false;
             }
@@ -445,7 +463,7 @@ namespace app {
         auto camera = graphics->camera();
 
         float dt = platform->dt();
-        float movement_speed = dt * this->speed;
+        float movement_speed = dt * this->movement_speed;
 
         if (platform->key(engine::platform::KEY_W).is_down()) { camera->move_camera(engine::graphics::Camera::Movement::FORWARD, movement_speed); }
 
@@ -461,7 +479,9 @@ namespace app {
 
         if (platform->key(engine::platform::KeyId::KEY_L).state() == engine::platform::Key::State::JustPressed) { isCameraTorchOn = !isCameraTorchOn; }
 
-        if (platform->key(engine::platform::KeyId::KEY_O).state() == engine::platform::Key::State::JustPressed) { action_sequence = !action_sequence; }
+        if (platform->key(engine::platform::KeyId::KEY_O).state() == engine::platform::Key::State::JustPressed) {
+            action_sequence = true;
+        }
 
         // Prevent camera from going below the ground
         if (!can_camera_go_below_ground && camera->Position.y < 0.2) {

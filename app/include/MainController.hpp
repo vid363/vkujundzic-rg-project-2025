@@ -14,7 +14,8 @@ namespace app {
     class MainController final : public engine::core::Controller {
 
     public:
-        float speed = 3.0f;
+        float movement_speed = 3.0f;
+        float mouse_sensitivity = 5.0f;
 
         // Light values
         glm::vec3 dir_light_dir = glm::vec3(1.0f, -1.0f, -1.0f);
@@ -22,7 +23,7 @@ namespace app {
 
         glm::vec3 dir_light_diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
         glm::vec3 dir_light_specular = glm::vec3(1.0f, 1.0f, 1.0f);
-        float dir_light_intensity = 0.5f;
+        float dir_light_intensity = 0.1f;
 
         // Spotlight values
         glm::vec3 spotlight_ambient = glm::vec3(0.2f, 0.2f, 0.2f);
@@ -56,9 +57,7 @@ namespace app {
 
         class Jeep {
             public:
-                // TODO: move both light directions to jeep direction if time allows (hopefully)
-                glm::vec3 light1_direction = glm::vec3(1.0f, -0.09f, -0.31);
-                glm::vec3 light2_direction = glm::vec3(1.0f, -0.09f, -0.31);
+                glm::vec3 light_direction = glm::vec3(1.0f, -0.09f, -0.31);
                 glm::vec3 light1_pos = glm::vec3(0.71f, 0.87f, -5.43f);
                 glm::vec3 light2_pos = glm::vec3(0.98f, 0.87f, -4.65f);
                 float rotation_z = 110.0f;
@@ -73,8 +72,8 @@ namespace app {
                 float yaw = 0.0f;
                 float roll = 0.0f;
                 float speed = 30.0f;
-                float rotation_speed = 18.0f;
-                float pitch_before_stabilizing = 30.0f;
+                float rotation_speed = 21.0f;
+                float pitch_before_stabilizing = -25.0f;
                 float yaw_before_stabilizing = 0.0f;
                 float roll_before_stabilizing = 0.0f;
                 bool reached_landing_dest = false;

@@ -23,6 +23,9 @@ namespace app {
 
         ImGui::Begin("INFO");
 
+        ImGui::InputFloat("Mouse sensitivity", &mainController->mouse_sensitivity);
+        ImGui::InputFloat("Movement speed", &mainController->movement_speed);
+
         if (ImGui::BeginTabBar("TABS")) {
             if (ImGui::BeginTabItem("Camera")) {
 
